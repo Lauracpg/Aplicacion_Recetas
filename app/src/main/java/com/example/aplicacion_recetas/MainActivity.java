@@ -51,16 +51,9 @@ public class MainActivity extends AppCompatActivity {
         );
 
         btnAgregar.setOnClickListener(v -> {
-            Receta r = new Receta();
-            r.titulo = "Tortilla de patatas";
-            r.categoria = "Desayuno";
-            r.tiempo = 40;
-            r.ingredientes = "Huevos, patatas, cebolla, aceite, sal";
-            r.pasos = "1. Pelar patatas. 2. Batir huevos. 3. Freír patatas y mezclar con huevos batidos. 4. Cocinar en sartén.";
-            long id = db.agregarReceta(r);
-            mostrarRecetas();
+            Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
+            startForResult.launch(intent);
         });
-        mostrarRecetas();
     }
     private void mostrarRecetas() {
         List<Receta> lista = db.getRecetas();
