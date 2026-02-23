@@ -5,13 +5,11 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -21,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewRecetas;
     ActivityResultLauncher<Intent> startForResult;
 
+    RecyclerView recyclerView;
+    RecetaAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
-        textViewRecetas = findViewById(R.id.textViewRecetas);
+        recyclerView = findViewById(R.id.recyclerRecetas);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -57,11 +59,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void mostrarRecetas() {
         List<Receta> lista = db.getRecetas();
-        StringBuilder sb = new StringBuilder();
-        for (Receta r: lista) {
-            sb.append(r.id).append(": ").append(r.titulo)
-                    .append(" (").append(r.categoria).append(")\n");
-        }
-        textViewRecetas.setText("Recetas:\n" + sb.toString());
+        adapter = new RecetaAdapter(lista);
+        recyclerView.setAdapter(adapter);
     }
 }
