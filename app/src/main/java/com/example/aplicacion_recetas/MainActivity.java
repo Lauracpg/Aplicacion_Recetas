@@ -11,10 +11,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     RecyclerView recyclerView;
     RecetaAdapter adapter;
+
+    private String ultimaRecetaAgregada;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +63,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
                             db.agregarReceta(r);
                             mostrarRecetas();
-                            lanzarNotificacion(r.titulo);
+                            ultimaRecetaAgregada = r.titulo;
+                            lanzarNotificacion(ultimaRecetaAgregada);
                         }
                     }
                 }
@@ -76,15 +81,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 new DialogConfirmacion().show(getSupportFragmentManager(), "salir");
             }
         });
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                        100);
-            }
-        }
     }
     private void mostrarRecetas() {
         List<Receta> lista = db.getRecetas();
@@ -105,6 +101,19 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
 
     private void lanzarNotificacion(String tituloReceta) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        100);
+                return;
+            }
+            enviarNotificacion(tituloReceta);
+        }
+    }
+    private void enviarNotificacion(String tituloReceta) {
         String canalId = "canal_recetas";
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -134,6 +143,25 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true)
                         .setContentIntent(pendingIntent);
+
         manager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == 100) {
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ultimaRecetaAgregada != null) {
+                    enviarNotificacion(ultimaRecetaAgregada);
+                }
+            } else {
+                Toast.makeText(this, "No se podrán enviar notificaciones de nuevas recetas", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
