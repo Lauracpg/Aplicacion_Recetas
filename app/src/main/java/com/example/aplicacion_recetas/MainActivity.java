@@ -7,8 +7,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.telecom.Conference;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,16 +29,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener{
+public class MainActivity extends AppCompatActivity
+        implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener{
     DBHelper db;
     Button btnAgregar;
-    TextView textViewRecetas;
-    ActivityResultLauncher<Intent> startForResult;
 
-    RecyclerView recyclerView;
-    RecetaAdapter adapter;
-
+    private ActivityResultLauncher<Intent> startForResult;
     private String ultimaRecetaAgregada;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,27 +45,26 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
-        recyclerView = findViewById(R.id.recyclerRecetas);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK) {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Intent data = result.getData();
-                        if (data!=null) {
-                            Receta r = new Receta();
-                            r.titulo = data.getStringExtra("titulo");
-                            r.categoria = data.getStringExtra("categoria");
-                            r.tiempo = data.getIntExtra("tiempo", 0);
-                            r.ingredientes = data.getStringExtra("ingredientes");
-                            r.pasos = data.getStringExtra("pasos");
+                        Receta r = new Receta();
+                        r.titulo = data.getStringExtra("titulo");
+                        r.categoria = data.getStringExtra("categoria");
+                        r.tiempo = data.getIntExtra("tiempo", 0);
+                        r.ingredientes = data.getStringExtra("ingredientes");
+                        r.pasos = data.getStringExtra("pasos");
 
-                            db.agregarReceta(r);
-                            mostrarRecetas();
-                            ultimaRecetaAgregada = r.titulo;
-                            lanzarNotificacion(ultimaRecetaAgregada);
-                        }
+                        db.agregarReceta(r);
+
+                        ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+                        if (listaRecetasFragment != null) listaRecetasFragment.refreshLista();
+
+                        ultimaRecetaAgregada = r.titulo;
+                        lanzarNotificacion(ultimaRecetaAgregada);
                     }
                 }
         );
@@ -82,10 +81,21 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             }
         });
     }
-    private void mostrarRecetas() {
-        List<Receta> lista = db.getRecetas();
-        adapter = new RecetaAdapter(lista);
-        recyclerView.setAdapter(adapter);
+
+    @Override
+    public void onRecetaSeleccionada(Receta receta) {
+        int orientation = getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // actualizar detalle en fragment
+            DetalleRecetaFragment detalle = (DetalleRecetaFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
+            if (detalle != null) detalle.mostrarReceta(receta);
+        } else {
+            // abrir actividad detalle
+            Intent i = new Intent(this, DetalleRecetaActivity.class);
+            i.putExtra("receta", receta);
+            startActivity(i);
+        }
     }
 
     @Override
@@ -97,8 +107,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     public void onCancelar() {
         // nada
     }
-
-
 
     private void lanzarNotificacion(String tituloReceta) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

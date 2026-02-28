@@ -11,10 +11,17 @@ import java.util.List;
 
 public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
     private List<Receta> listaRecetas;
+    private OnRecetaClickListener listener;
 
-    public RecetaAdapter(List<Receta> lista) {
-        this.listaRecetas = lista;
+    public interface OnRecetaClickListener {
+        void onRecetaClick(Receta receta);
     }
+
+    public RecetaAdapter(List<Receta> lista, OnRecetaClickListener listener) {
+        this.listaRecetas = lista;
+        this.listener = listener;
+    }
+
     @NonNull
     @Override
     public RecetaVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -29,10 +36,18 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
         holder.titulo.setText(r.titulo);
         holder.categoria.setText("Categoría: " + r.categoria);
         holder.tiempo.setText("Tiempo: " + r.tiempo + " min");
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onRecetaClick(r);
+        });
     }
 
     @Override
     public int getItemCount() {
         return listaRecetas.size();
+    }
+
+    public void setRecetas(List<Receta> lista) {
+        this.listaRecetas = lista;
     }
 }

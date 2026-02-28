@@ -1,6 +1,8 @@
 package com.example.aplicacion_recetas;
 
-public class Receta {
+import java.io.Serializable;
+
+public class Receta implements Serializable {
     public int id;
     public String titulo;
     public String categoria;

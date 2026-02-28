@@ -23,6 +23,10 @@
 
         <activity android:name=".AgregarRecetaActivity"
             android:exported="false" />
+
+        <activity android:name=".DetalleRecetaActivity"
+            android:exported="false" />
+
     </application>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>
