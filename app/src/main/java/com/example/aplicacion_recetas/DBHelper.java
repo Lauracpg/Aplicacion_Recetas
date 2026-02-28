@@ -57,6 +57,11 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
         return id;
     }
+    public void eliminarReceta(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_RECETAS, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+    }
 
     // Listar recetas
     public List<Receta> getRecetas() {

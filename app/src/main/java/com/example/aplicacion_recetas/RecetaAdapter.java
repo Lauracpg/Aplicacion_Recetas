@@ -15,6 +15,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
 
     public interface OnRecetaClickListener {
         void onRecetaClick(Receta receta);
+        void onRecetaEliminar(Receta receta);
     }
 
     public RecetaAdapter(List<Receta> lista, OnRecetaClickListener listener) {
@@ -39,6 +40,11 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRecetaClick(r);
+        });
+
+        // botón eliminar
+        holder.btnEliminar.setOnClickListener(v -> {
+            if (listener != null) listener.onRecetaEliminar(r);
         });
     }
 

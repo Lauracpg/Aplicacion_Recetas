@@ -17,6 +17,7 @@ import java.util.List;
 public class ListaRecetasFragment extends Fragment {
     public interface Listener {
         void onRecetaSeleccionada(Receta receta);
+        void onRecetaEliminar(Receta receta);
     }
 
     private Listener listener;
@@ -47,11 +48,18 @@ public class ListaRecetasFragment extends Fragment {
         mostrarRecetas();
         return view;
     }
-
     private void mostrarRecetas() {
         List<Receta> lista = db.getRecetas();
-        adapter = new RecetaAdapter(lista, receta -> {
-            if (listener != null) listener.onRecetaSeleccionada(receta);
+        adapter = new RecetaAdapter(lista, new RecetaAdapter.OnRecetaClickListener() {
+            @Override
+            public void onRecetaClick(Receta receta) {
+                if (listener != null) listener.onRecetaSeleccionada(receta);
+            }
+            @Override
+            public void onRecetaEliminar(Receta receta) {
+                if (listener != null) listener.onRecetaEliminar(receta);
+                refreshLista();
+            }
         });
         recyclerView.setAdapter(adapter);
     }

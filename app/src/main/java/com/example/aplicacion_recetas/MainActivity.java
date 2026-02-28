@@ -97,6 +97,15 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
         }
     }
+    @Override
+    public void onRecetaEliminar(Receta receta) {
+        db.eliminarReceta(receta.id);
+        ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+        if(listaRecetasFragment != null) {
+            listaRecetasFragment.refreshLista();
+        }
+    }
 
     @Override
     public void onConfirmar() {
