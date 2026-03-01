@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Errezeta_Aplikazioa</string>
+    <string name="hint_titulo">Izenburua</string>
+    <string name="hint_categoria">Kategoria</string>
+    <string name="hint_tiempo">Denbora (min)</string>
+    <string name="hint_ingredientes">Osagaiak</string>
+    <string name="hint_pasos">Urratsak</string>
+    <string name="btn_guardar">Gorde</string>
+    <string name="categoria">Kategoria</string>
+    <string name="tiempo">Denbora</string>
+    <string name="minutos">min</string>
+    <string name="btn_eliminar">Ezabatu</string>
+    <string name="btn_agregar_receta">Errezeta gehitu</string>
+    <string name="idioma_castellano">Gaztelania</string>
+    <string name="idioma_euskera">Euskara</string>
+</resources>

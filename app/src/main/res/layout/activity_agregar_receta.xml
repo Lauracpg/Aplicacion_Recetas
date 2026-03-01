@@ -7,38 +7,38 @@
 
     <EditText
         android:id="@+id/editTextTitulo"
-        android:hint="Título"
+        android:hint="@string/hint_titulo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/editTextCategoria"
-        android:hint="Categoría"
+        android:hint="@string/hint_categoria"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/editTextTiempo"
-        android:hint="Tiempo (min)"
+        android:hint="@string/hint_tiempo"
         android:inputType="number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/editTextIngredientes"
-        android:hint="Ingredientes"
+        android:hint="@string/hint_ingredientes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <EditText
         android:id="@+id/editTextPasos"
-        android:hint="Pasos"
+        android:hint="@string/hint_pasos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/btnGuardar"
-        android:text="Guardar"
+        android:text="@string/btn_guardar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 

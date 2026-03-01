@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/textViewTitulo"
-        android:text="Título de la receta"
+        android:text="@string/hint_titulo"
         android:textStyle="bold"
         android:textSize="20sp"
         android:layout_height="wrap_content"
@@ -19,7 +19,7 @@
 
     <TextView
         android:id="@+id/textViewCategoria"
-        android:text="Categoría"
+        android:text="@string/hint_categoria"
         android:textSize="16sp"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
@@ -30,7 +30,7 @@
 
     <TextView
         android:id="@+id/textViewTiempo"
-        android:text="Tiempo"
+        android:text="@string/hint_tiempo"
         android:textSize="16sp"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
@@ -41,7 +41,7 @@
 
     <TextView
         android:id="@+id/textViewIngredientes"
-        android:text="Ingredientes"
+        android:text="@string/hint_ingredientes"
         android:textSize="16sp"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
@@ -52,7 +52,7 @@
 
     <TextView
         android:id="@+id/textViewPasos"
-        android:text="Pasos"
+        android:text="@string/hint_pasos"
         android:textSize="16sp"
         android:layout_height="0dp"
         android:layout_width="0dp"

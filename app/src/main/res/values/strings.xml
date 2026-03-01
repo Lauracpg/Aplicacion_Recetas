@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Aplicacion_Recetas</string>
+    <string name="hint_titulo">Título</string>
+    <string name="hint_categoria">Categoría</string>
+    <string name="hint_tiempo">Tiempo (min)</string>
+    <string name="hint_ingredientes">Ingredientes</string>
+    <string name="hint_pasos">Pasos</string>
+    <string name="btn_guardar">Guardar</string>
+    <string name="categoria">Categoría</string>
+    <string name="tiempo">Tiempo</string>
+    <string name="minutos">min</string>
+    <string name="btn_eliminar">Eliminar</string>
+    <string name="btn_agregar_receta">Agregar receta</string>
+    <string name="idioma_castellano">Castellano</string>
+    <string name="idioma_euskera">Euskera</string>
 </resources>

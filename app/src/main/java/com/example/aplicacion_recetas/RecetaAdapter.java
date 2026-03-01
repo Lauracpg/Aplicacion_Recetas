@@ -1,5 +1,6 @@
 package com.example.aplicacion_recetas;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +36,11 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
     public void onBindViewHolder(@NonNull RecetaVH holder, int position) {
         Receta r = listaRecetas.get(position);
         holder.titulo.setText(r.titulo);
-        holder.categoria.setText("Categoría: " + r.categoria);
-        holder.tiempo.setText("Tiempo: " + r.tiempo + " min");
+
+        Context context = holder.itemView.getContext();
+        holder.categoria.setText(context.getString(R.string.categoria) + ": " + r.categoria);
+        holder.tiempo.setText(context.getString(R.string.tiempo) + ": " + r.tiempo + " "
+                + context.getString(R.string.minutos));
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRecetaClick(r);

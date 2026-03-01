@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
         implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener{
@@ -37,7 +39,6 @@ public class MainActivity extends AppCompatActivity
     private ActivityResultLauncher<Intent> startForResult;
     private String ultimaRecetaAgregada;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +46,12 @@ public class MainActivity extends AppCompatActivity
 
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
+
+        // Botones idiomas
+        Button btnEs = findViewById(R.id.btnIdiomaEs);
+        Button btnEu = findViewById(R.id.btnIdiomaEu);
+        btnEs.setOnClickListener(v -> cambiarIdioma("es"));
+        btnEu.setOnClickListener(v -> cambiarIdioma("eu"));
 
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -81,7 +88,33 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+    private void guardarIdioma(String codeIdioma) {
+        SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
+        prefs.edit().putString("lang", codeIdioma).apply();
+    }
+    private void cambiarIdioma(String codeIdioma) {
+        guardarIdioma(codeIdioma);
 
+        finish();
+        startActivity(getIntent());
+    }
+
+    @Override
+    protected  void attachBaseContext(Context newBase) {
+        SharedPreferences prefs = newBase.getSharedPreferences("config", MODE_PRIVATE);
+        String lang = prefs.getString("lang", Locale.getDefault().getLanguage());
+
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+
+        Configuration config = newBase.getResources().getConfiguration();
+        config.setLocale(locale);
+        config.setLayoutDirection(locale);
+
+        Context context = newBase.createConfigurationContext(config);
+
+        super.attachBaseContext(context);
+    }
     @Override
     public void onRecetaSeleccionada(Receta receta) {
         int orientation = getResources().getConfiguration().orientation;
