@@ -4,39 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnIdiomaEs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/idioma_castellano"
-        android:textSize="12sp"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/light_purple"
+        android:title="@string/app_name"
+        android:titleTextColor="@color/white"
+        android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnIdiomaEu"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="4dp"/>
-
-    <Button
-        android:id="@+id/btnIdiomaEu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/idioma_euskera"
-        android:textSize="12sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <fragment
         android:id="@+id/fragment_lista_recetas"
         android:name="com.example.aplicacion_recetas.ListaRecetasFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btnIdiomaEs"
+        android:background="@color/white"
+        android:padding="8dp"
+        android:elevation="2dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toTopOf="@id/btnAgregarReceta"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/fragment_detalle_receta"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_margin="8dp"
         app:layout_constraintWidth_percent="0.4"/>
 
     <fragment
@@ -44,12 +36,14 @@
         android:name="com.example.aplicacion_recetas.DetalleRecetaFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btnIdiomaEu"
+        android:background="@color/white"
+        android:padding="8dp"
+        android:elevation="2dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toTopOf="@id/btnAgregarReceta"
         app:layout_constraintStart_toEndOf="@id/fragment_lista_recetas"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_margin="8dp"
         app:layout_constraintWidth_percent="0.6"/>
 
     <Button
@@ -57,11 +51,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/btn_agregar_receta"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/dark_purple"
+        android:padding="12dp"
+        android:clipToOutline="true"
+        android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_margin="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

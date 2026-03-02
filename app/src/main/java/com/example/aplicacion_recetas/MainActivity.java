@@ -12,9 +12,12 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.telecom.Conference;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,14 +47,11 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
-
-        // Botones idiomas
-        Button btnEs = findViewById(R.id.btnIdiomaEs);
-        Button btnEu = findViewById(R.id.btnIdiomaEu);
-        btnEs.setOnClickListener(v -> cambiarIdioma("es"));
-        btnEu.setOnClickListener(v -> cambiarIdioma("eu"));
 
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -88,13 +88,32 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_idioma, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_es) {
+            cambiarIdioma("es");
+            return true;
+        } else if (id == R.id.menu_eu) {
+            cambiarIdioma("eu");
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void guardarIdioma(String codeIdioma) {
         SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
         prefs.edit().putString("lang", codeIdioma).apply();
     }
     private void cambiarIdioma(String codeIdioma) {
         guardarIdioma(codeIdioma);
-
         finish();
         startActivity(getIntent());
     }

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+    android:background="@color/white"
     app:cardElevation="8dp"
     app:cardCornerRadius="12dp">
 
@@ -17,16 +18,19 @@
             android:id="@+id/textTitulo"
             android:textStyle="bold"
             android:textSize="18sp"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/textCategoria"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/textTiempo"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -35,6 +39,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/btn_eliminar"
-            android:layout_marginTop="8dp"/>
+            android:textColor="@color/white"
+            android:backgroundTint="@color/dark_purple"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:elevation="2dp"
+            android:clipToOutline="true"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

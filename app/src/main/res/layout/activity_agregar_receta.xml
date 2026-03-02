@@ -39,6 +39,8 @@
     <Button
         android:id="@+id/btnGuardar"
         android:text="@string/btn_guardar"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/dark_purple"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
