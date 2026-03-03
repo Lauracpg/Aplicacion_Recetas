@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Aplicacion_Recetas</string>
+    <string name="app_name">Aplicacion Recetas</string>
     <string name="hint_titulo">Título</string>
     <string name="hint_categoria">Categoría</string>
     <string name="hint_tiempo">Tiempo (min)</string>
@@ -23,4 +23,6 @@
     <string name="no_notificaciones">No se podrán enviar notificaciones de nuevas recetas</string>
     <string name="salir_titulo">Salir</string>
     <string name="salir_mensaje">¿Seguro que quiere salir de la aplicación?</string>
+    <string name="navigation_drawer_open">Abrir menú lateral</string>
+    <string name="navigation_drawer_close">Cerrar menú lateral</string>
 </resources>

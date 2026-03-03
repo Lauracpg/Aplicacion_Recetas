@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Errezeta_Aplikazioa</string>
+    <string name="app_name">Errezeta Aplikazioa</string>
     <string name="hint_titulo">Izenburua</string>
     <string name="hint_categoria">Kategoria</string>
     <string name="hint_tiempo">Denbora (min)</string>
@@ -23,4 +23,6 @@
     <string name="no_notificaciones">Ezin izango dira jakinarazpenak bidali</string>
     <string name="salir_titulo">Irten</string>
     <string name="salir_mensaje">Ziur zaude aplikaziotik irten nahi duzula?</string>
+    <string name="navigation_drawer_open">Ireki alboko menua</string>
+    <string name="navigation_drawer_close">Itxi alboko menua</string>
 </resources>

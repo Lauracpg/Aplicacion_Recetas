@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_agregar_receta"
+        android:title="@string/btn_agregar_receta"
+        android:icon="@android:drawable/ic_input_add"/>
+
+    <item
+        android:id="@+id/menu_ver_recetas"
+        android:title="Ver recetas"
+        android:icon="@android:drawable/ic_menu_view"/>
+
+    <item
+        android:id="@+id/menu_configuracion"
+        android:title="Configuración"
+        android:icon="@android:drawable/ic_menu_preferences"/>
+</menu>

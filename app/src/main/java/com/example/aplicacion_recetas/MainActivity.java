@@ -1,6 +1,7 @@
 package com.example.aplicacion_recetas;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,13 +13,13 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.telecom.Conference;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.OnBackPressedCallback;
@@ -28,12 +29,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-import java.util.List;
+import com.google.android.material.navigation.NavigationView;
+
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
@@ -64,6 +65,35 @@ public class MainActivity extends AppCompatActivity
         
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.app_name);
+        }
+
+        DrawerLayout dl = findViewById(R.id.drawer_layout);
+        NavigationView nv = findViewById(R.id.navigation_view);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, dl, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        dl.addDrawerListener(toggle);
+        toggle.syncState();
+
+        nv.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.menu_agregar_receta) {
+                Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
+                startForResult.launch(intent);
+            } else if (id == R.id.menu_ver_recetas) {
+                Toast.makeText(this, "Ver recetas seleccionada", Toast.LENGTH_SHORT).show();
+            } else if (id== R.id.menu_configuracion) {
+                Toast.makeText(this, "Configuración seleccionada", Toast.LENGTH_SHORT).show();
+            }
+            dl.closeDrawer(GravityCompat.START);
+            return true;
+        });
 
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
@@ -99,10 +129,14 @@ public class MainActivity extends AppCompatActivity
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                new DialogConfirmacion().show(getSupportFragmentManager(), "salir");
+                DrawerLayout dl = findViewById(R.id.drawer_layout);
+                if(dl.isDrawerOpen(GravityCompat.START)) {
+                    dl.closeDrawer(GravityCompat.START);
+                } else {
+                    new DialogConfirmacion().show(getSupportFragmentManager(), "salir");
+                }
             }
         });
-
     }
 
     @Override
