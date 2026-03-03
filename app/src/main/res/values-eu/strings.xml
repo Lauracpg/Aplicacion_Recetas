@@ -13,4 +13,14 @@
     <string name="btn_agregar_receta">Errezeta gehitu</string>
     <string name="idioma_castellano">Gaztelania</string>
     <string name="idioma_euskera">Euskara</string>
+    <string name="confirmar_eliminacion">Ezabapena baieztatu</string>
+    <string name="mensaje_confirmar_eliminacion">Ziur zaude errezeta ezabatu nahi duzula?</string>
+    <string name="receta_eliminada">Errezeta ezabatua</string>
+    <string name="noti_receta_eliminada_titulo">Errezeta ezabatua</string>
+    <string name="noti_receta_eliminada_texto">%1$s ezabatu da</string>
+    <string name="noti_receta_agregada_titulo">Errezeta gehitua</string>
+    <string name="noti_receta_agregada_texto">%1$s gehitu da</string>
+    <string name="no_notificaciones">Ezin izango dira jakinarazpenak bidali</string>
+    <string name="salir_titulo">Irten</string>
+    <string name="salir_mensaje">Ziur zaude aplikaziotik irten nahi duzula?</string>
 </resources>

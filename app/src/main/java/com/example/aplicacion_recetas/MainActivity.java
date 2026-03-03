@@ -1,6 +1,7 @@
 package com.example.aplicacion_recetas;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -35,12 +36,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
-        implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener{
+        implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     DBHelper db;
     Button btnAgregar;
 
     private ActivityResultLauncher<Intent> startForResult;
     private String ultimaRecetaAgregada;
+    private Receta recetaEliminar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,11 +153,28 @@ public class MainActivity extends AppCompatActivity
     }
     @Override
     public void onRecetaEliminar(Receta receta) {
-        db.eliminarReceta(receta.id);
-        ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-        if(listaRecetasFragment != null) {
-            listaRecetasFragment.refreshLista();
+        recetaEliminar = receta;
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.confirmar_eliminacion))
+                .setMessage(getString(R.string.mensaje_confirmar_eliminacion))
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> eliminarRecetaConfirmada())
+                .setNegativeButton(android.R.string.no, null)
+                .show();
+    }
+
+    private void eliminarRecetaConfirmada() {
+        if (recetaEliminar != null) {
+            db.eliminarReceta(recetaEliminar.id);
+            ListaRecetasFragment lista = (ListaRecetasFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+
+            if (lista != null) {
+                lista.refreshLista();
+            }
+
+            lanzarNotificacionEliminada(recetaEliminar.titulo);
+            Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
+            recetaEliminar = null;
         }
     }
 
@@ -207,8 +226,8 @@ public class MainActivity extends AppCompatActivity
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this, canalId)
                         .setSmallIcon(android.R.drawable.ic_dialog_info)
-                        .setContentTitle("Receta añadida")
-                        .setContentText("Se ha añadido: " + tituloReceta)
+                        .setContentTitle(getString(R.string.noti_receta_agregada_titulo))
+                        .setContentText(getString(R.string.noti_receta_agregada_texto, tituloReceta))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true)
                         .setContentIntent(pendingIntent);
@@ -229,8 +248,43 @@ public class MainActivity extends AppCompatActivity
                     enviarNotificacion(ultimaRecetaAgregada);
                 }
             } else {
-                Toast.makeText(this, "No se podrán enviar notificaciones de nuevas recetas", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.no_notificaciones), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    public void onEliminarDesdeDetalle(Receta receta) {
+        db.eliminarReceta(receta.id);
+
+        ListaRecetasFragment lista = (ListaRecetasFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+
+        if(lista != null) {
+            lista.refreshLista();
+        }
+
+        lanzarNotificacionEliminada(receta.titulo);
+
+        Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
+
+        if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            finish();
+        }
+    }
+
+    private void lanzarNotificacionEliminada(String titulo) {
+        String canalId = "canal_recetas";
+        NotificationManager manager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this, canalId)
+                        .setSmallIcon(android.R.drawable.ic_delete)
+                        .setContentTitle(getString(R.string.noti_receta_eliminada_titulo))
+                        .setContentText(getString(R.string.noti_receta_eliminada_texto, titulo))
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true);
+        manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 }

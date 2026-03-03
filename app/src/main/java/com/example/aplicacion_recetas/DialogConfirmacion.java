@@ -20,10 +20,10 @@ public class DialogConfirmacion extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         listener = (Listener) getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Salir")
-                .setMessage("¿Seguro que quiere salir de la aplicación?")
-                .setPositiveButton("Sí", (dialog, which) -> listener.onConfirmar())
-                .setNegativeButton("No", (dialog, which) -> listener.onCancelar())
+        builder.setTitle(getString(R.string.salir_titulo))
+                .setMessage(getString(R.string.salir_mensaje))
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> listener.onConfirmar())
+                .setNegativeButton(android.R.string.no, (dialog, which) -> listener.onCancelar())
                 .setCancelable(false);
         return builder.create();
     }

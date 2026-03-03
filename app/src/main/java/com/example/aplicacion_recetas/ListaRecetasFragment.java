@@ -58,7 +58,6 @@ public class ListaRecetasFragment extends Fragment {
             @Override
             public void onRecetaEliminar(Receta receta) {
                 if (listener != null) listener.onRecetaEliminar(receta);
-                refreshLista();
             }
         });
         recyclerView.setAdapter(adapter);
@@ -69,5 +68,11 @@ public class ListaRecetasFragment extends Fragment {
             adapter.setRecetas(db.getRecetas());
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshLista();
     }
 }

@@ -13,4 +13,14 @@
     <string name="btn_agregar_receta">Agregar receta</string>
     <string name="idioma_castellano">Castellano</string>
     <string name="idioma_euskera">Euskera</string>
+    <string name="confirmar_eliminacion">Confirmar eliminación</string>
+    <string name="mensaje_confirmar_eliminacion">¿Seguro que quieres eliminar la receta?</string>
+    <string name="receta_eliminada">Receta eliminada</string>
+    <string name="noti_receta_eliminada_titulo">Receta eliminada</string>
+    <string name="noti_receta_eliminada_texto">Se ha eliminado: %1$s</string>
+    <string name="noti_receta_agregada_titulo">Receta añadida</string>
+    <string name="noti_receta_agregada_texto">Se ha añadido: %1$s</string>
+    <string name="no_notificaciones">No se podrán enviar notificaciones de nuevas recetas</string>
+    <string name="salir_titulo">Salir</string>
+    <string name="salir_mensaje">¿Seguro que quiere salir de la aplicación?</string>
 </resources>
