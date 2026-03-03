@@ -59,9 +59,9 @@ public class DetalleRecetaFragment extends Fragment {
     public void mostrarReceta(Receta receta) {
         recetaActual = receta;
         textViewTitulo.setText(receta.titulo);
-        textViewCategoria.setText(receta.categoria);
-        textViewTiempo.setText(receta.tiempo + " min");
-        textViewIngredientes.setText(receta.ingredientes);
-        textViewPasos.setText(receta.pasos);
+        textViewCategoria.setText(getString(R.string.hint_categoria) + ": " + receta.categoria);
+        textViewTiempo.setText(getString(R.string.hint_tiempo) + ": " + receta.tiempo + " " + getString(R.string.minutos));
+        textViewIngredientes.setText(getString(R.string.hint_ingredientes) + ": " + receta.ingredientes);
+        textViewPasos.setText(getString(R.string.hint_pasos) + ": " + receta.pasos);
     }
 }
