@@ -9,4 +9,5 @@ public class Receta implements Serializable {
     public int tiempo; //mins
     public String ingredientes;
     public String pasos;
+    public String fotoUri;
 }

@@ -25,4 +25,6 @@
     <string name="salir_mensaje">Ziur zaude aplikaziotik irten nahi duzula?</string>
     <string name="navigation_drawer_open">Ireki alboko menua</string>
     <string name="navigation_drawer_close">Itxi alboko menua</string>
+    <string name="btn_agregar_foto">Argazkia gehitu</string>
+    <string name="foto_receta">Errezetaren argazkia</string>
 </resources>

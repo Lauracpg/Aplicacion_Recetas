@@ -25,4 +25,6 @@
     <string name="salir_mensaje">¿Seguro que quiere salir de la aplicación?</string>
     <string name="navigation_drawer_open">Abrir menú lateral</string>
     <string name="navigation_drawer_close">Cerrar menú lateral</string>
+    <string name="btn_agregar_foto">Agregar foto</string>
+    <string name="foto_receta">Foto de la receta</string>
 </resources>

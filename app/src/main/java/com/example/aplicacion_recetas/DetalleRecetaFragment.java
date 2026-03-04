@@ -1,12 +1,19 @@
 package com.example.aplicacion_recetas;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +23,8 @@ import androidx.fragment.app.Fragment;
 public class DetalleRecetaFragment extends Fragment {
     private TextView textViewTitulo, textViewCategoria, textViewTiempo, textViewIngredientes, textViewPasos;
     private Receta recetaActual;
+    private static final int REQUEST_GALERIA = 200;
+    private ImageView imageViewFoto;
     private Listener listener;
     public interface Listener {
         void onEliminarDesdeDetalle(Receta receta);
@@ -39,6 +48,7 @@ public class DetalleRecetaFragment extends Fragment {
         textViewTiempo = view.findViewById(R.id.textViewTiempo);
         textViewIngredientes = view.findViewById(R.id.textViewIngredientes);
         textViewPasos = view.findViewById(R.id.textViewPasos);
+        imageViewFoto = view.findViewById(R.id.imageViewFoto);
 
         Button btnEliminar = view.findViewById(R.id.btnEliminarDetalle);
         btnEliminar.setOnClickListener(v -> {
@@ -53,7 +63,45 @@ public class DetalleRecetaFragment extends Fragment {
                     .setNegativeButton(android.R.string.no, null)
                     .show();
         });
+        Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
+        btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
         return view;
+    }
+
+    private void abrirGaleria() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_GALERIA);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
+            Uri imgSelected = data.getData();
+            if(imgSelected != null && recetaActual != null) {
+                requireContext().getContentResolver().takePersistableUriPermission(
+                        imgSelected, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                );
+
+                imageViewFoto.setImageURI(imgSelected);
+                imageViewFoto.setVisibility(View.VISIBLE);
+                recetaActual.fotoUri = imgSelected.toString();
+
+                DBHelper db = new DBHelper(requireContext());
+                SQLiteDatabase database = db.getWritableDatabase();
+
+                ContentValues values = new ContentValues();
+                values.put(DBHelper.COLUMN_FOTO, recetaActual.fotoUri);
+
+                database.update(DBHelper.TABLE_RECETAS, values,DBHelper.COLUMN_ID + "=?",
+                        new String[]{String.valueOf(recetaActual.id)});
+
+                database.close();
+            }
+        }
     }
 
     public void mostrarReceta(Receta receta) {
@@ -63,5 +111,11 @@ public class DetalleRecetaFragment extends Fragment {
         textViewTiempo.setText(getString(R.string.hint_tiempo) + ": " + receta.tiempo + " " + getString(R.string.minutos));
         textViewIngredientes.setText(getString(R.string.hint_ingredientes) + ": " + receta.ingredientes);
         textViewPasos.setText(getString(R.string.hint_pasos) + ": " + receta.pasos);
+        if(receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
+            imageViewFoto.setVisibility(View.VISIBLE);
+            imageViewFoto.setImageURI(Uri.parse(receta.fotoUri));
+        } else {
+            imageViewFoto.setImageResource(android.R.color.transparent);
+        }
     }
 }

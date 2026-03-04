@@ -11,7 +11,7 @@ import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "recetas.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String TABLE_RECETAS = "recetas";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_TITULO = "titulo";
@@ -19,6 +19,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_TIEMPO = "tiempo";
     public static final String COLUMN_INGREDIENTES = "ingredientes";
     public static final String COLUMN_PASOS = "pasos";
+    public static final String COLUMN_FOTO = "foto";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,7 +33,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 + COLUMN_CATEGORIA + " TEXT, "
                 + COLUMN_TIEMPO + " INTEGER, "
                 + COLUMN_INGREDIENTES + " TEXT, "
-                + COLUMN_PASOS + " TEXT"
+                + COLUMN_PASOS + " TEXT, "
+                + COLUMN_FOTO + " TEXT"
                 + ");";
         db.execSQL(CREATE_TABLE);
     }
@@ -52,7 +54,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TIEMPO, receta.tiempo);
         values.put(COLUMN_INGREDIENTES, receta.ingredientes);
         values.put(COLUMN_PASOS, receta.pasos);
-
+        values.put(COLUMN_FOTO, receta.fotoUri);
         long id = db.insert(TABLE_RECETAS, null, values);
         db.close();
         return id;
@@ -77,6 +79,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 r.tiempo = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIEMPO));
                 r.ingredientes = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTES));
                 r.pasos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASOS));
+                r.fotoUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOTO));
                 lista.add(r);
             } while (cursor.moveToNext());
         }

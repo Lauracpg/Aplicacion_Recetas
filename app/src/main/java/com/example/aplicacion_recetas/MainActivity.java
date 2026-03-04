@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity
                         r.tiempo = data.getIntExtra("tiempo", 0);
                         r.ingredientes = data.getStringExtra("ingredientes");
                         r.pasos = data.getStringExtra("pasos");
-
+                        r.fotoUri = data.getStringExtra("fotoUri");
                         db.agregarReceta(r);
 
                         ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);

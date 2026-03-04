@@ -1,14 +1,22 @@
 package com.example.aplicacion_recetas;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AgregarRecetaActivity extends AppCompatActivity {
     EditText editTextTitulo, editTextCategoria, editTextTiempo, editTextIngredientes, editTextPasos;
+    ImageView imageViewFoto;
+    Button btnAgregarFoto;
+    private static final int REQUEST_GALERIA = 100;
+    private String fotoUri = null;
     Button btnGuardar;
 
     @Override
@@ -21,6 +29,9 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         editTextTiempo = findViewById(R.id.editTextTiempo);
         editTextIngredientes = findViewById(R.id.editTextIngredientes);
         editTextPasos = findViewById(R.id.editTextPasos);
+        imageViewFoto = findViewById(R.id.imageViewFoto);
+        btnAgregarFoto = findViewById(R.id.btnAgregarFoto);
+        btnAgregarFoto.setOnClickListener( v-> abrirGaleria());
         btnGuardar = findViewById(R.id.btnGuardar);
 
         btnGuardar.setOnClickListener(v -> {
@@ -30,6 +41,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             data.putExtra("tiempo", Integer.parseInt(editTextTiempo.getText().toString()));
             data.putExtra("ingredientes", editTextIngredientes.getText().toString());
             data.putExtra("pasos", editTextPasos.getText().toString());
+            data.putExtra("fotoUri", fotoUri);
 
             setResult(RESULT_OK, data);
             finish();
@@ -37,4 +49,24 @@ public class AgregarRecetaActivity extends AppCompatActivity {
 
     }
 
+    private void abrirGaleria() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_GALERIA);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REQUEST_GALERIA && resultCode == RESULT_OK && data != null) {
+            Uri imgSelected = data.getData();
+            if(imgSelected != null) {
+                getContentResolver().takePersistableUriPermission(imgSelected, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                imageViewFoto.setImageURI(imgSelected);
+                imageViewFoto.setVisibility(View.VISIBLE);
+                fotoUri = imgSelected.toString();
+            }
+        }
+    }
 }
