@@ -11,7 +11,7 @@ import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "recetas.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     public static final String TABLE_RECETAS = "recetas";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_TITULO = "titulo";
@@ -20,8 +20,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_INGREDIENTES = "ingredientes";
     public static final String COLUMN_PASOS = "pasos";
     public static final String COLUMN_FOTO = "foto";
+    public static final String COLUMN_FAVORITA = "favorita";
 
     public DBHelper(Context context) {
+
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -34,15 +36,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 + COLUMN_TIEMPO + " INTEGER, "
                 + COLUMN_INGREDIENTES + " TEXT, "
                 + COLUMN_PASOS + " TEXT, "
-                + COLUMN_FOTO + " TEXT"
+                + COLUMN_FOTO + " TEXT, "
+                + COLUMN_FAVORITA + " INTEGER DEFAULT 0"
                 + ");";
         db.execSQL(CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECETAS);
-        onCreate(db);
+        if(oldVersion < 2) {
+            db.execSQL("ALTER TABLE " + TABLE_RECETAS + " ADD COLUMN " + COLUMN_FAVORITA + " INTEGER DEFAULT 0");
+        }
     }
 
     // Añadir una receta
@@ -55,6 +59,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(COLUMN_INGREDIENTES, receta.ingredientes);
         values.put(COLUMN_PASOS, receta.pasos);
         values.put(COLUMN_FOTO, receta.fotoUri);
+        values.put(COLUMN_FAVORITA, receta.favorita ? 1 :0);
         long id = db.insert(TABLE_RECETAS, null, values);
         db.close();
         return id;
@@ -80,11 +85,44 @@ public class DBHelper extends SQLiteOpenHelper {
                 r.ingredientes = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTES));
                 r.pasos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASOS));
                 r.fotoUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOTO));
+                r.favorita = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FAVORITA)) == 1;
                 lista.add(r);
             } while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
         return lista;
+    }
+
+    public List<Receta> getRecetasFavoritas() {
+        List<Receta> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_RECETAS + " WHERE " + COLUMN_FAVORITA + "=1", null);
+        if (cursor.moveToFirst()) {
+            do {
+                Receta r = new Receta();
+                r.id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
+                r.titulo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITULO));
+                r.categoria = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CATEGORIA));
+                r.tiempo = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIEMPO));
+                r.ingredientes = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTES));
+                r.pasos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASOS));
+                r.fotoUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOTO));
+                int favIndex = cursor.getColumnIndex(COLUMN_FAVORITA);
+                r.favorita = (favIndex != -1 && cursor.getInt(favIndex) == 1);
+                lista.add(r);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return lista;
+    }
+
+    public void updateFavorita(int id, boolean favorita) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_FAVORITA, favorita ? 1 : 0);
+        db.update(TABLE_RECETAS, values, COLUMN_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
     }
 }

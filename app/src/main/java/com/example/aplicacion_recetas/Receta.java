@@ -10,4 +10,5 @@ public class Receta implements Serializable {
     public String ingredientes;
     public String pasos;
     public String fotoUri;
+    public boolean favorita = false;
 }

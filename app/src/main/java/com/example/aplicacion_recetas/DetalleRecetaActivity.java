@@ -16,9 +16,13 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
 
         Receta receta = (Receta) getIntent().getSerializableExtra("receta");
 
-        DetalleRecetaFragment fragment = (DetalleRecetaFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
+        DetalleRecetaFragment fragment = (DetalleRecetaFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
 
         if(fragment != null && receta != null) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("receta", receta);
+            fragment.setArguments(bundle);
             fragment.mostrarReceta(receta);
         }
     }

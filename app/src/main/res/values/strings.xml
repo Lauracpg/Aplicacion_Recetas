@@ -27,4 +27,7 @@
     <string name="navigation_drawer_close">Cerrar menú lateral</string>
     <string name="btn_agregar_foto">Agregar foto</string>
     <string name="foto_receta">Foto de la receta</string>
+    <string name="favorito">favorito</string>
+    <string name="ver_favoritas">Ver favoritas</string>
+    <string name="ver_todas">Ver todas las recetas</string>
 </resources>

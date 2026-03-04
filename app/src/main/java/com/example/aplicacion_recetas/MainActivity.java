@@ -81,23 +81,6 @@ public class MainActivity extends AppCompatActivity
         dl.addDrawerListener(toggle);
         toggle.syncState();
 
-        nv.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.menu_agregar_receta) {
-                Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
-                startForResult.launch(intent);
-            } else if (id == R.id.menu_ver_recetas) {
-                Toast.makeText(this, "Ver recetas seleccionada", Toast.LENGTH_SHORT).show();
-            } else if (id== R.id.menu_configuracion) {
-                Toast.makeText(this, "Configuración seleccionada", Toast.LENGTH_SHORT).show();
-            }
-            dl.closeDrawer(GravityCompat.START);
-            return true;
-        });
-
-        db = new DBHelper(this);
-        btnAgregar = findViewById(R.id.btnAgregarReceta);
-
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -121,6 +104,28 @@ public class MainActivity extends AppCompatActivity
                 }
         );
 
+        nv.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            ListaRecetasFragment listaFragment =
+                    (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+            if (id == R.id.menu_agregar_receta) {
+                Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
+                startForResult.launch(intent);
+            } else if (id == R.id.menu_ver_recetas) { // todas
+                if (listaFragment != null) {
+                    listaFragment.mostrarRecetas();
+                }
+            } else if (id == R.id.menu_ver_recetas_favoritas) {
+                if (listaFragment != null) {
+                    listaFragment.mostrarFavoritas();
+                }
+            }
+            dl.closeDrawer(GravityCompat.START);
+            return true;
+        });
+
+        db = new DBHelper(this);
+        btnAgregar = findViewById(R.id.btnAgregarReceta);
         btnAgregar.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
             startForResult.launch(intent);
@@ -191,7 +196,9 @@ public class MainActivity extends AppCompatActivity
             // actualizar detalle en fragment
             DetalleRecetaFragment detalle = (DetalleRecetaFragment)
                     getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
-            if (detalle != null) detalle.mostrarReceta(receta);
+            if (detalle != null) {
+                detalle.mostrarReceta(receta);
+            }
         } else {
             // abrir actividad detalle
             Intent i = new Intent(this, DetalleRecetaActivity.class);

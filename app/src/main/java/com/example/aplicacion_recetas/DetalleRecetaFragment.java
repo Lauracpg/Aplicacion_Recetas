@@ -25,6 +25,7 @@ public class DetalleRecetaFragment extends Fragment {
     private Receta recetaActual;
     private static final int REQUEST_GALERIA = 200;
     private ImageView imageViewFoto;
+    private ImageView imageFavDetalle;
     private Listener listener;
     public interface Listener {
         void onEliminarDesdeDetalle(Receta receta);
@@ -35,6 +36,14 @@ public class DetalleRecetaFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof Listener) {
             listener = (Listener) context;
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(getArguments() != null) {
+            recetaActual = (Receta) getArguments().getSerializable("receta");
         }
     }
 
@@ -65,6 +74,22 @@ public class DetalleRecetaFragment extends Fragment {
         });
         Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
         btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
+
+        imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
+        imageFavDetalle.setOnClickListener(v -> {
+            if(recetaActual != null) {
+                recetaActual.favorita = !recetaActual.favorita;
+                imageFavDetalle.setImageResource(
+                        recetaActual.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
+                );
+                DBHelper db = new DBHelper(requireContext());
+                ContentValues values = new ContentValues();
+                values.put(DBHelper.COLUMN_FAVORITA, recetaActual.favorita ? 1 : 0);
+                SQLiteDatabase database = db.getWritableDatabase();
+                database.update(DBHelper.TABLE_RECETAS, values, DBHelper.COLUMN_ID + "=?", new String[]{String.valueOf(recetaActual.id)});
+                database.close();
+            }
+        });
         return view;
     }
 
@@ -105,6 +130,7 @@ public class DetalleRecetaFragment extends Fragment {
     }
 
     public void mostrarReceta(Receta receta) {
+        if (receta == null) return;
         recetaActual = receta;
         textViewTitulo.setText(receta.titulo);
         textViewCategoria.setText(getString(R.string.hint_categoria) + ": " + receta.categoria);
@@ -117,5 +143,8 @@ public class DetalleRecetaFragment extends Fragment {
         } else {
             imageViewFoto.setImageResource(android.R.color.transparent);
         }
+        imageFavDetalle.setImageResource(
+                receta.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
+        );
     }
 }

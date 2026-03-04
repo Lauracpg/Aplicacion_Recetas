@@ -1,6 +1,8 @@
 package com.example.aplicacion_recetas;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +43,23 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
         holder.categoria.setText(context.getString(R.string.categoria) + ": " + r.categoria);
         holder.tiempo.setText(context.getString(R.string.tiempo) + ": " + r.tiempo + " "
                 + context.getString(R.string.minutos));
+
+        holder.imgFav.setImageResource(
+                r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
+        );
+
+        holder.imgFav.setOnClickListener( v -> {
+            r.favorita = !r.favorita;
+            holder.imgFav.setImageResource(
+                    r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
+            );
+            DBHelper db = new DBHelper(context);
+            ContentValues values = new ContentValues();
+            values.put(DBHelper.COLUMN_FAVORITA, r.favorita ? 1 : 0);
+            SQLiteDatabase database = db.getWritableDatabase();
+            database.update(DBHelper.TABLE_RECETAS, values, DBHelper.COLUMN_ID + "=?", new String[]{String.valueOf(r.id)});
+            database.close();
+        });
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onRecetaClick(r);

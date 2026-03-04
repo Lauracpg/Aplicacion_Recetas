@@ -27,4 +27,8 @@
     <string name="navigation_drawer_close">Itxi alboko menua</string>
     <string name="btn_agregar_foto">Argazkia gehitu</string>
     <string name="foto_receta">Errezetaren argazkia</string>
+    <string name="favorito">gogoko</string>
+    <string name="ver_favoritas">Ikusi gogokoenak</string>
+    <string name="ver_todas">Ikusi errezeta guztiak</string>
+
 </resources>

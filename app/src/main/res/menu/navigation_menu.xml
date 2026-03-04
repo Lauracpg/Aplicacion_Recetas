@@ -7,11 +7,11 @@
 
     <item
         android:id="@+id/menu_ver_recetas"
-        android:title="Ver recetas"
+        android:title="@string/ver_todas"
         android:icon="@android:drawable/ic_menu_view"/>
 
     <item
-        android:id="@+id/menu_configuracion"
-        android:title="Configuración"
-        android:icon="@android:drawable/ic_menu_preferences"/>
+        android:id="@+id/menu_ver_recetas_favoritas"
+        android:title="@string/ver_favoritas"
+        android:icon="@android:drawable/ic_menu_view"/>
 </menu>
