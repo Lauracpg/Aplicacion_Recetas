@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -74,6 +75,9 @@ public class DetalleRecetaFragment extends Fragment {
         });
         Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
         btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
+
+        ImageButton btnVolver = view.findViewById(R.id.btnVolverInicio);
+        btnVolver.setOnClickListener(v -> requireActivity().finish());
 
         imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
         imageFavDetalle.setOnClickListener(v -> {

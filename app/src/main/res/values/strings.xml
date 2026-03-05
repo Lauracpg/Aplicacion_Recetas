@@ -30,4 +30,5 @@
     <string name="favorito">favorito</string>
     <string name="ver_favoritas">Ver favoritas</string>
     <string name="ver_todas">Ver todas las recetas</string>
+    <string name="volver_inicio">Volver al inicio</string>
 </resources>

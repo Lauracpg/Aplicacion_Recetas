@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_width="match_parent"
@@ -63,5 +64,15 @@
         android:backgroundTint="@color/dark_purple"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <ImageButton
+        android:id="@+id/btnVolverInicio"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_revert"
+        android:contentDescription="@string/volver_inicio"
+        android:layout_marginTop="12dp"
+        app:tint="@color/black" />
 
 </LinearLayout>

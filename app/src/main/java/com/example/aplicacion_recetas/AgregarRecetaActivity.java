@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
@@ -46,7 +47,8 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             setResult(RESULT_OK, data);
             finish();
         });
-
+        ImageButton btnVolver = findViewById(R.id.btnVolverInicio);
+        btnVolver.setOnClickListener(v -> finish());
     }
 
     private void abrirGaleria() {

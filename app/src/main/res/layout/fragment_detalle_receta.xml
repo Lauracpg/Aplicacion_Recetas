@@ -140,5 +140,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <ImageButton
+            android:id="@+id/btnVolverInicio"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="@string/volver_inicio"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/btnEliminarDetalle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tint="@color/black"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
