@@ -77,6 +77,16 @@ public class DetalleRecetaFragment extends Fragment {
         btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
 
         ImageButton btnVolver = view.findViewById(R.id.btnVolverInicio);
+        Fragment listaFragment = requireActivity()
+                        .getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_lista_recetas);
+        if(listaFragment != null) {
+            btnVolver.setVisibility(View.GONE);
+        } else {
+            btnVolver.setVisibility(View.VISIBLE);
+            btnVolver.setOnClickListener(v -> requireActivity().finish());
+        }
+
         btnVolver.setOnClickListener(v -> requireActivity().finish());
 
         imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);

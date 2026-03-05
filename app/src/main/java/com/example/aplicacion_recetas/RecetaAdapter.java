@@ -41,8 +41,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
 
         Context context = holder.itemView.getContext();
         holder.categoria.setText(context.getString(R.string.categoria) + ": " + r.categoria);
-        holder.tiempo.setText(context.getString(R.string.tiempo) + ": " + r.tiempo + " "
-                + context.getString(R.string.minutos));
+        holder.tiempo.setText(context.getString(R.string.tiempo) + ": " + r.tiempo + " " + context.getString(R.string.minutos));
 
         holder.imgFav.setImageResource(
                 r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
@@ -54,11 +53,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
                     r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
             );
             DBHelper db = new DBHelper(context);
-            ContentValues values = new ContentValues();
-            values.put(DBHelper.COLUMN_FAVORITA, r.favorita ? 1 : 0);
-            SQLiteDatabase database = db.getWritableDatabase();
-            database.update(DBHelper.TABLE_RECETAS, values, DBHelper.COLUMN_ID + "=?", new String[]{String.valueOf(r.id)});
-            database.close();
+            db.updateFavorita(r.id, r.favorita);
         });
 
         holder.itemView.setOnClickListener(v -> {

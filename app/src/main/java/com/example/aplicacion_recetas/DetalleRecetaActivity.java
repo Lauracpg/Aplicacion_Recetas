@@ -2,7 +2,9 @@ package com.example.aplicacion_recetas;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +15,12 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
     protected  void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_receta);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                            View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
+        }
 
         Receta receta = (Receta) getIntent().getSerializableExtra("receta");
 

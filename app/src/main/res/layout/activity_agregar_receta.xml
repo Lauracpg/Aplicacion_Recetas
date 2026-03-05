@@ -1,78 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:padding="16dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <EditText
-        android:id="@+id/editTextTitulo"
-        android:hint="@string/hint_titulo"
+    <LinearLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/editTextCategoria"
-        android:hint="@string/hint_categoria"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextTitulo"
+            android:hint="@string/hint_titulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/editTextTiempo"
-        android:hint="@string/hint_tiempo"
-        android:inputType="number"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextCategoria"
+            android:hint="@string/hint_categoria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/editTextIngredientes"
-        android:hint="@string/hint_ingredientes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextTiempo"
+            android:hint="@string/hint_tiempo"
+            android:inputType="number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/editTextPasos"
-        android:hint="@string/hint_pasos"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextIngredientes"
+            android:hint="@string/hint_ingredientes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-    <ImageView
-        android:id="@+id/imageViewFoto"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:contentDescription="@string/foto_receta"
-        android:scaleType="fitCenter"
-        android:visibility="gone"/>
+        <EditText
+            android:id="@+id/editTextPasos"
+            android:hint="@string/hint_pasos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-    <Button
-        android:id="@+id/btnAgregarFoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="12dp"
-        android:backgroundTint="@color/dark_purple"
-        android:text="@string/btn_agregar_foto"
-        android:textColor="@color/white" />
+        <ImageView
+            android:id="@+id/imageViewFoto"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/foto_receta"
+            android:scaleType="fitCenter"
+            android:visibility="gone"/>
 
-    <Button
-        android:id="@+id/btnGuardar"
-        android:text="@string/btn_guardar"
-        android:textColor="@color/white"
-        android:backgroundTint="@color/dark_purple"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/btnAgregarFoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="@color/dark_purple"
+            android:text="@string/btn_agregar_foto"
+            android:textColor="@color/white"/>
 
-    <ImageButton
-        android:id="@+id/btnVolverInicio"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_revert"
-        android:contentDescription="@string/volver_inicio"
-        android:layout_marginTop="12dp"
-        app:tint="@color/black" />
+        <Button
+            android:id="@+id/btnGuardar"
+            android:text="@string/btn_guardar"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/dark_purple"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
-</LinearLayout>
+        <ImageButton
+            android:id="@+id/btnVolverInicio"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="@string/volver_inicio"
+            android:layout_marginTop="12dp"
+            app:tint="@color/black" />
+
+    </LinearLayout>
+</ScrollView>
