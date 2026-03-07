@@ -7,7 +7,9 @@
     <LinearLayout
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingTop = "32dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -15,32 +17,42 @@
             android:id="@+id/editTextTitulo"
             android:hint="@string/hint_titulo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
-        <EditText
-            android:id="@+id/editTextCategoria"
-            android:hint="@string/hint_categoria"
+        <Spinner
+            android:id="@+id/spinnerCategoria"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <EditText
             android:id="@+id/editTextTiempo"
             android:hint="@string/hint_tiempo"
             android:inputType="number"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <EditText
             android:id="@+id/editTextIngredientes"
             android:hint="@string/hint_ingredientes"
+            android:inputType="textMultiLine"
+            android:lines="5"
+            android:gravity="top"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <EditText
             android:id="@+id/editTextPasos"
             android:hint="@string/hint_pasos"
+            android:inputType="textMultiLine"
+            android:lines="6"
+            android:gravity="top"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <ImageView
             android:id="@+id/imageViewFoto"
@@ -48,6 +60,7 @@
             android:layout_height="120dp"
             android:layout_gravity="center"
             android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/foto_receta"
             android:scaleType="fitCenter"
             android:visibility="gone"/>
@@ -57,7 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:backgroundTint="@color/dark_purple"
             android:text="@string/btn_agregar_foto"
             android:textColor="@color/white"/>
@@ -68,7 +81,8 @@
             android:textColor="@color/white"
             android:backgroundTint="@color/dark_purple"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
 
         <ImageButton
             android:id="@+id/btnVolverInicio"
