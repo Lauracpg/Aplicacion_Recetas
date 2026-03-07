@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.Locale;
@@ -40,7 +41,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity
         implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     DBHelper db;
-    Button btnAgregar;
+    FloatingActionButton btnAgregar;
 
     private ActivityResultLauncher<Intent> startForResult;
     private String ultimaRecetaAgregada;
