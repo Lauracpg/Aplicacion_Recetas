@@ -2,10 +2,21 @@
     <string name="app_name">Aplicacion Recetas</string>
     <string name="hint_titulo">Título</string>
     <string name="hint_categoria">Categoría</string>
+    <string-array name="categorias">
+        <item>Plato principal</item>
+        <item>Segundo plato</item>
+        <item>Cena</item>
+        <item>Ensalda</item>
+        <item>Postre</item>
+    </string-array>
     <string name="hint_tiempo">Tiempo (min)</string>
     <string name="hint_ingredientes">Ingredientes</string>
     <string name="hint_pasos">Pasos</string>
     <string name="btn_guardar">Guardar</string>
+    <string name="error_titulo">Introduce un título para la receta</string>
+    <string name="error_tiempo">Introduce el tiempo</string>
+    <string name="error_ingredientes">Introduce los ingredientes</string>
+    <string name="error_pasos">Introduce los pasos</string>
     <string name="categoria">Categoría</string>
     <string name="tiempo">Tiempo</string>
     <string name="minutos">min</string>

@@ -42,8 +42,11 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         editTextTitulo = findViewById(R.id.editTextTitulo);
 
         spinnerCategoria = findViewById(R.id.spinnerCategoria);
-        String[] categorias = {"Postre", "Cena", "Plato Principal", "Segundo Plato", "Ensalada"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categorias);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.categorias,
+                android.R.layout.simple_spinner_item
+        );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategoria.setAdapter(adapter);
 
@@ -120,12 +123,44 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         btnGuardar = findViewById(R.id.btnGuardar);
 
         btnGuardar.setOnClickListener(v -> {
+            String titulo = editTextTitulo.getText().toString().trim();
+            String tiempoString = editTextTiempo.getText().toString().trim();
+            String ingredientes = editTextIngredientes.getText().toString().trim();
+            String pasos = editTextPasos.getText().toString().trim();
+            boolean valido = true;
+
+            if(titulo.isEmpty()){
+                editTextTitulo.setError(getString(R.string.error_titulo));
+                valido = false;
+            }
+
+            if(tiempoString.isEmpty()){
+                editTextTiempo.setError(getString(R.string.error_tiempo));
+                valido = false;
+            }
+
+            if(ingredientes.isEmpty()){
+                editTextIngredientes.setError(getString(R.string.error_ingredientes));
+                valido = false;
+            }
+
+            if(pasos.isEmpty()){
+                editTextPasos.setError(getString(R.string.error_pasos));
+                valido = false;
+            }
+
+            if(!valido){
+                return;
+            }
+
+            int tiempo = Integer.parseInt(tiempoString);
+
             Intent data = new Intent();
-            data.putExtra("titulo", editTextTitulo.getText().toString());
+            data.putExtra("titulo", titulo);
             data.putExtra("categoria", spinnerCategoria.getSelectedItem().toString());
-            data.putExtra("tiempo", Integer.parseInt(editTextTiempo.getText().toString()));
-            data.putExtra("ingredientes", editTextIngredientes.getText().toString());
-            data.putExtra("pasos", editTextPasos.getText().toString());
+            data.putExtra("tiempo", tiempo);
+            data.putExtra("ingredientes", ingredientes);
+            data.putExtra("pasos", pasos);
             data.putExtra("fotoUri", fotoUri);
 
             setResult(RESULT_OK, data);

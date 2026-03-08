@@ -2,10 +2,21 @@
     <string name="app_name">Errezeta Aplikazioa</string>
     <string name="hint_titulo">Izenburua</string>
     <string name="hint_categoria">Kategoria</string>
+    <string-array name="categorias">
+        <item>Plater nagusia</item>
+        <item>Bigarren platera</item>
+        <item>Afaria</item>
+        <item>Entsalada</item>
+        <item>Postrea</item>
+    </string-array>
     <string name="hint_tiempo">Denbora (min)</string>
     <string name="hint_ingredientes">Osagaiak</string>
     <string name="hint_pasos">Urratsak</string>
     <string name="btn_guardar">Gorde</string>
+    <string name="error_titulo">Idatzi izenburua errezetarako</string>
+    <string name="error_tiempo">Idatzi denbora</string>
+    <string name="error_ingredientes">Idatzi osagaiak</string>
+    <string name="error_pasos">Idatzi urratsak</string>
     <string name="categoria">Kategoria</string>
     <string name="tiempo">Denbora</string>
     <string name="minutos">min</string>
