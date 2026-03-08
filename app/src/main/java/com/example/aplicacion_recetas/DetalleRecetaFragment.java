@@ -147,10 +147,10 @@ public class DetalleRecetaFragment extends Fragment {
         if (receta == null) return;
         recetaActual = receta;
         textViewTitulo.setText(receta.titulo);
-        textViewCategoria.setText(getString(R.string.hint_categoria) + ": " + receta.categoria);
-        textViewTiempo.setText(getString(R.string.hint_tiempo) + ": " + receta.tiempo + " " + getString(R.string.minutos));
-        textViewIngredientes.setText(getString(R.string.hint_ingredientes) + ": " + receta.ingredientes);
-        textViewPasos.setText(getString(R.string.hint_pasos) + ": " + receta.pasos);
+        textViewCategoria.setText(receta.categoria);
+        textViewTiempo.setText(receta.tiempo + " " + getString(R.string.minutos));
+        textViewIngredientes.setText(receta.ingredientes);
+        textViewPasos.setText(receta.pasos);
         if(receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
             imageViewFoto.setVisibility(View.VISIBLE);
             imageViewFoto.setImageURI(Uri.parse(receta.fotoUri));
