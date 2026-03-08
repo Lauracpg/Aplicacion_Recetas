@@ -152,6 +152,25 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 return;
             }
 
+            if(titulo.length() > 0) {
+                titulo = titulo.substring(0,1).toUpperCase() + titulo.substring(1);
+            }
+
+            String[] pasosLines = pasos.split("\n");
+            StringBuilder pasosBuilder = new StringBuilder();
+            for(int i = 0; i < pasosLines.length; i++) {
+                String line = pasosLines[i];
+                if(line.matches("^\\d+\\.\\s.*")) {
+                    int punto = line.indexOf(". ");
+                    if(punto + 2 < line.length()){
+                        line = line.substring(0, punto + 2) + line.substring(punto + 2, punto + 3).toUpperCase() + line.substring(punto + 3);
+                    }
+                }
+                pasosBuilder.append(line);
+                if(i < pasosLines.length - 1) pasosBuilder.append("\n");
+            }
+            pasos = pasosBuilder.toString();
+
             int tiempo = Integer.parseInt(tiempoString);
 
             Intent data = new Intent();
