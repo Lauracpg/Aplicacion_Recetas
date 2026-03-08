@@ -1,7 +1,6 @@
 package com.example.aplicacion_recetas;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,7 +15,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;

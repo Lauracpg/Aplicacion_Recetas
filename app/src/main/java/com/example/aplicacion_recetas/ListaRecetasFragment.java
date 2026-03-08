@@ -44,6 +44,7 @@ public class ListaRecetasFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_lista_recetas, container, false);
         recyclerView = view.findViewById(R.id.recyclerRecetas);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        recyclerView.setHasFixedSize(true);
         db = new DBHelper(view.getContext());
 
         adapter = new RecetaAdapter(new ArrayList<>(), new RecetaAdapter.OnRecetaClickListener() {
@@ -65,14 +66,12 @@ public class ListaRecetasFragment extends Fragment {
         mostrarFavoritas = false;
         List<Receta> todas = db.getRecetas();
         adapter.setRecetas(todas);
-        adapter.notifyDataSetChanged();
     }
 
     public void mostrarFavoritas() {
         mostrarFavoritas = true;
         List<Receta> favoritas = db.getRecetasFavoritas();
         adapter.setRecetas(favoritas);
-        adapter.notifyDataSetChanged();
     }
 
     public void refreshLista() {
@@ -82,7 +81,6 @@ public class ListaRecetasFragment extends Fragment {
             } else {
                 adapter.setRecetas(db.getRecetas());
             }
-            adapter.notifyDataSetChanged();
         }
     }
 

@@ -1,8 +1,6 @@
 package com.example.aplicacion_recetas;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,5 +71,6 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
 
     public void setRecetas(List<Receta> lista) {
         this.listaRecetas = lista;
+        notifyDataSetChanged();
     }
 }
