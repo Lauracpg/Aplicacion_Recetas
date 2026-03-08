@@ -75,19 +75,17 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Receta> lista = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_RECETAS, null);
-        if (cursor.moveToFirst()) {
-            do {
-                Receta r = new Receta();
-                r.id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
-                r.titulo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITULO));
-                r.categoria = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CATEGORIA));
-                r.tiempo = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIEMPO));
-                r.ingredientes = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTES));
-                r.pasos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASOS));
-                r.fotoUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOTO));
-                r.favorita = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FAVORITA)) == 1;
-                lista.add(r);
-            } while (cursor.moveToNext());
+        while (cursor.moveToNext()) {
+            Receta r = new Receta();
+            r.id = cursor.getInt(0);
+            r.titulo = cursor.getString(1);
+            r.categoria = cursor.getString(2);
+            r.tiempo = cursor.getInt(3);
+            r.ingredientes = cursor.getString(4);
+            r.pasos = cursor.getString(5);
+            r.fotoUri = cursor.getString(6);
+            r.favorita = cursor.getInt(7) == 1;
+            lista.add(r);
         }
         cursor.close();
         db.close();
@@ -98,20 +96,17 @@ public class DBHelper extends SQLiteOpenHelper {
         List<Receta> lista = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_RECETAS + " WHERE " + COLUMN_FAVORITA + "=1", null);
-        if (cursor.moveToFirst()) {
-            do {
-                Receta r = new Receta();
-                r.id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
-                r.titulo = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITULO));
-                r.categoria = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CATEGORIA));
-                r.tiempo = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIEMPO));
-                r.ingredientes = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INGREDIENTES));
-                r.pasos = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASOS));
-                r.fotoUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FOTO));
-                int favIndex = cursor.getColumnIndex(COLUMN_FAVORITA);
-                r.favorita = (favIndex != -1 && cursor.getInt(favIndex) == 1);
-                lista.add(r);
-            } while (cursor.moveToNext());
+        while (cursor.moveToNext()) {
+            Receta r = new Receta();
+            r.id = cursor.getInt(0);
+            r.titulo = cursor.getString(1);
+            r.categoria = cursor.getString(2);
+            r.tiempo = cursor.getInt(3);
+            r.ingredientes = cursor.getString(4);
+            r.pasos = cursor.getString(5);
+            r.fotoUri = cursor.getString(6);
+            r.favorita = cursor.getInt(7) == 1;
+            lista.add(r);
         }
         cursor.close();
         db.close();

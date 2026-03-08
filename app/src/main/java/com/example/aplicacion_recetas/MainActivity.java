@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity
     FloatingActionButton btnAgregar;
 
     private ActivityResultLauncher<Intent> startForResult;
-    private String ultimaRecetaAgregada;
+    private Receta ultimaRecetaAgregada;
     private Receta recetaEliminar;
 
     @Override
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity
                         ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
                         if (listaRecetasFragment != null) listaRecetasFragment.refreshLista();
 
-                        ultimaRecetaAgregada = r.titulo;
+                        ultimaRecetaAgregada = r;
                         lanzarNotificacion(ultimaRecetaAgregada);
                     }
                 }
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity
         // nada
     }
 
-    private void lanzarNotificacion(String tituloReceta) {
+    private void lanzarNotificacion(Receta receta) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -247,10 +247,12 @@ public class MainActivity extends AppCompatActivity
                         100);
                 return;
             }
-            enviarNotificacion(tituloReceta);
+            enviarNotificacion(receta);
+        } else {
+            enviarNotificacion(receta);
         }
     }
-    private void enviarNotificacion(String tituloReceta) {
+    private void enviarNotificacion(Receta receta) {
         String canalId = "canal_recetas";
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -266,7 +268,9 @@ public class MainActivity extends AppCompatActivity
             manager.createNotificationChannel(canal);
         }
 
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, DetalleRecetaActivity.class);
+        intent.putExtra("receta", receta);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
@@ -276,7 +280,7 @@ public class MainActivity extends AppCompatActivity
                 new NotificationCompat.Builder(this, canalId)
                         .setSmallIcon(android.R.drawable.ic_dialog_info)
                         .setContentTitle(getString(R.string.noti_receta_agregada_titulo))
-                        .setContentText(getString(R.string.noti_receta_agregada_texto, tituloReceta))
+                        .setContentText(getString(R.string.noti_receta_agregada_texto, receta.titulo))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true)
                         .setContentIntent(pendingIntent);
@@ -332,6 +336,7 @@ public class MainActivity extends AppCompatActivity
                         .setSmallIcon(android.R.drawable.ic_delete)
                         .setContentTitle(getString(R.string.noti_receta_eliminada_titulo))
                         .setContentText(getString(R.string.noti_receta_eliminada_texto, titulo))
+                        .setSubText("Receta eliminada correctamente")
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
         manager.notify((int) System.currentTimeMillis(), builder.build());
