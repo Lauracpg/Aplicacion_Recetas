@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class RecetaVH extends RecyclerView.ViewHolder {
     TextView titulo, categoria, tiempo;
-    Button btnEliminar;
     ImageView imgFav;
+
+    Button btnEliminar;
     public RecetaVH(@NonNull View itemView) {
         super(itemView);
         titulo = itemView.findViewById(R.id.textTitulo);

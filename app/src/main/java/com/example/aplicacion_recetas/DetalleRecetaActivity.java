@@ -15,6 +15,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
     protected  void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_receta);
+        // color de elementos de la barra superior e inferior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
@@ -22,33 +23,43 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
             );
         }
 
+        // coge la receta enviada desde la actividad anterior
         Receta receta = (Receta) getIntent().getSerializableExtra("receta");
-
+        // obtiene el fragment de detalle de la receta
         DetalleRecetaFragment fragment = (DetalleRecetaFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
-
+        // si existe y se ha recibido, muestra los datos
         if(fragment != null && receta != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable("receta", receta);
             fragment.setArguments(bundle);
+            // llama al métood del fragment para cargar la info
             fragment.mostrarReceta(receta);
         }
     }
-
+    // Cuando desde el fragment se pulsa eliminar receta
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
         DBHelper db = new DBHelper(this);
+        // elimina la receta de la db con su id
         db.eliminarReceta(receta.id);
+        // lanza una notificación de que se ha eliminado
         lanzarNotificacionEliminada(receta.titulo);
-        Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
+        // pequeño mensaje en pantalla
+        Toast.makeText(this,
+                getString(R.string.receta_eliminada),
+                Toast.LENGTH_SHORT).show();
+
+        // cierra la pantalla actual y vuelve atrás
         finish();
     }
 
+    // Crea un notificación indicando que se ha eliminado una receta
     private void lanzarNotificacionEliminada(String titulo) {
         String canalId = "canal_recetas";
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
+        // construiye la notificación
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this, canalId)
                         .setSmallIcon(android.R.drawable.ic_delete)
@@ -56,6 +67,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         .setContentText(getString(R.string.noti_receta_eliminada_texto, titulo))
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setAutoCancel(true);
+        // se envía la notificación
         manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 }
