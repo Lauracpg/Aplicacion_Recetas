@@ -109,6 +109,8 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         btnVolver.setOnClickListener(v -> finish());
     }
 
+    // Recoge los datos introducidos, valida campos, formatea información
+    // y devuelve la receta a la actividad principal
     private void guardarReceta() {
         String titulo = editTextTitulo.getText().toString().trim();
         String tiempoString = editTextTiempo.getText().toString().trim();

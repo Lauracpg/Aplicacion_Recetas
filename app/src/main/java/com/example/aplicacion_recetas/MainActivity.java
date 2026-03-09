@@ -36,8 +36,8 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity
-        implements DialogConfirmacion.Listener, ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
+public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener,
+        ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     DBHelper db;
     FloatingActionButton btnAgregar;
 
@@ -49,24 +49,24 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        // color de elementos de la barra inferior y superior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
                     View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             );
         }
-        
+
+        // config de la toolbar como ActionBar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.app_name);
         }
 
+        // config del Navigation Drawer
         DrawerLayout dl = findViewById(R.id.drawer_layout);
         NavigationView nv = findViewById(R.id.navigation_view);
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, dl, toolbar,
                 R.string.navigation_drawer_open,
@@ -75,10 +75,12 @@ public class MainActivity extends AppCompatActivity
         dl.addDrawerListener(toggle);
         toggle.syncState();
 
+        // registro del launcher para recibir datos de AgregarRecetaActivity
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        // crear objeto Receta con los datos recibidos
                         Intent data = result.getData();
                         Receta r = new Receta();
                         r.titulo = data.getStringExtra("titulo");
@@ -87,17 +89,20 @@ public class MainActivity extends AppCompatActivity
                         r.ingredientes = data.getStringExtra("ingredientes");
                         r.pasos = data.getStringExtra("pasos");
                         r.fotoUri = data.getStringExtra("fotoUri");
-                        db.agregarReceta(r);
+                        db.agregarReceta(r); // guardar en db
 
+                        // actualizar la lista de recetas si está el fragmento
                         ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
                         if (listaRecetasFragment != null) listaRecetasFragment.refreshLista();
 
+                        // guardar la última receta añadida y lanzar notificación
                         ultimaRecetaAgregada = r;
                         lanzarNotificacion(ultimaRecetaAgregada);
                     }
                 }
         );
 
+        // Listener del menú lateral NavigationView
         nv.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             ListaRecetasFragment listaFragment =
@@ -117,7 +122,7 @@ public class MainActivity extends AppCompatActivity
             dl.closeDrawer(GravityCompat.START);
             return true;
         });
-
+        // inicializar db y botón de '+' (agregar receta)
         db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
         btnAgregar.setOnClickListener(v -> {
@@ -125,6 +130,7 @@ public class MainActivity extends AppCompatActivity
             startForResult.launch(intent);
         });
 
+        // control del botón atrás para cerrar drawer o mostrar confirmación de salir de la app
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -138,12 +144,14 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    // Inflar menú para selección de idioma
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_idioma, menu);
         return true;
     }
 
+    // Cambiar idioma según selección del menú
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -157,16 +165,19 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    // Guardar idioma seleccionado en SharedPreferences
     private void guardarIdioma(String codeIdioma) {
         SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
         prefs.edit().putString("lang", codeIdioma).apply();
     }
+    // Reiniciar activity para aplica el idioma nuevo
     private void cambiarIdioma(String codeIdioma) {
         guardarIdioma(codeIdioma);
         finish();
         startActivity(getIntent());
     }
 
+    // Ajustar contexto para el idioma guardado
     @Override
     protected  void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("config", MODE_PRIVATE);
@@ -180,26 +191,29 @@ public class MainActivity extends AppCompatActivity
         config.setLayoutDirection(locale);
 
         Context context = newBase.createConfigurationContext(config);
-
         super.attachBaseContext(context);
     }
+
+    // Maneja la selección de receta desde la lista
     @Override
     public void onRecetaSeleccionada(Receta receta) {
         int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // actualizar detalle en fragment
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
+            // mostrar receta en fragment de detalle
             DetalleRecetaFragment detalle = (DetalleRecetaFragment)
                     getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
             if (detalle != null) {
                 detalle.mostrarReceta(receta);
             }
-        } else {
+        } else { // vertical
             // abrir actividad detalle
             Intent i = new Intent(this, DetalleRecetaActivity.class);
             i.putExtra("receta", receta);
             startActivity(i);
         }
     }
+
+    // Solicitar eliminar receta desde lista
     @Override
     public void onRecetaEliminar(Receta receta) {
         recetaEliminar = receta;
@@ -211,6 +225,7 @@ public class MainActivity extends AppCompatActivity
                 .show();
     }
 
+    // Confirmar eliminación de la receta
     private void eliminarRecetaConfirmada() {
         if (recetaEliminar != null) {
             db.eliminarReceta(recetaEliminar.id);
@@ -237,11 +252,11 @@ public class MainActivity extends AppCompatActivity
         // nada
     }
 
+    // Lanzar notificación de receta agregada
     private void lanzarNotificacion(Receta receta) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
-
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
                         100);
@@ -257,7 +272,7 @@ public class MainActivity extends AppCompatActivity
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Crear canal
+        // Crear canal de notificación si es necesario
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel canal = new NotificationChannel(
                     canalId,
@@ -288,11 +303,11 @@ public class MainActivity extends AppCompatActivity
         manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
+    // Manejar permiso de notificaciones
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if(requestCode == 100) {
@@ -306,13 +321,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // Eliminación de receta desde fragment de detalle
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
         db.eliminarReceta(receta.id);
 
         ListaRecetasFragment lista = (ListaRecetasFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-
         if(lista != null) {
             lista.refreshLista();
         }
@@ -320,12 +335,13 @@ public class MainActivity extends AppCompatActivity
         lanzarNotificacionEliminada(receta.titulo);
 
         Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
-
+        // Si no está en landscape, cerrar la actividad detalle
         if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             finish();
         }
     }
 
+    // Notificación de receta eliminada
     private void lanzarNotificacionEliminada(String titulo) {
         String canalId = "canal_recetas";
         NotificationManager manager =
