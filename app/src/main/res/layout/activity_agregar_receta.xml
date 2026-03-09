@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:descendantFocusability="beforeDescendants">
 
     <LinearLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
-        android:paddingTop = "32dp"
+        android:paddingTop="32dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:layout_width="match_parent"
@@ -20,65 +21,71 @@
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:text="@string/hint_categoria"
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <Spinner
             android:id="@+id/spinnerCategoria"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:text="@string/hint_tiempo"
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
+
         <EditText
             android:id="@+id/editTextTiempo"
             android:inputType="number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:text="@string/hint_ingredientes"
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <EditText
             android:id="@+id/editTextIngredientes"
             android:inputType="textMultiLine"
-            android:lines="5"
+            android:minLines="3"
+            android:maxLines="4"
             android:gravity="top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:text="@string/hint_pasos"
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <EditText
             android:id="@+id/editTextPasos"
             android:inputType="textMultiLine"
-            android:lines="6"
+            android:minLines="3"
+            android:maxLines="4"
             android:gravity="top"
+            android:imeOptions="actionDone"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <ImageView
             android:id="@+id/imageViewFoto"
@@ -89,7 +96,7 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/foto_receta"
             android:scaleType="fitCenter"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btnAgregarFoto"
@@ -99,7 +106,7 @@
             android:layout_marginBottom="16dp"
             android:backgroundTint="@color/dark_purple"
             android:text="@string/btn_agregar_foto"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white" />
 
         <Button
             android:id="@+id/btnGuardar"
@@ -108,7 +115,7 @@
             android:backgroundTint="@color/dark_purple"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp" />
 
         <ImageButton
             android:id="@+id/btnVolverInicio"
@@ -117,7 +124,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_revert"
             android:contentDescription="@string/volver_inicio"
-            android:tint="@color/black"/>
+            app:tint="@android:color/black" />
 
     </LinearLayout>
 </ScrollView>
