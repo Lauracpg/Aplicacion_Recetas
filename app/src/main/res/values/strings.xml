@@ -6,7 +6,7 @@
         <item>Plato principal</item>
         <item>Segundo plato</item>
         <item>Cena</item>
-        <item>Ensalda</item>
+        <item>Ensalada</item>
         <item>Postre</item>
     </string-array>
     <string name="hint_tiempo">Tiempo (min)</string>
