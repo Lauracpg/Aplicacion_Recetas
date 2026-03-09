@@ -22,7 +22,8 @@
         </activity>
 
         <activity android:name=".AgregarRecetaActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity android:name=".DetalleRecetaActivity"
             android:exported="false" />

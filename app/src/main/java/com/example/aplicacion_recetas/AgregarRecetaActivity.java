@@ -50,70 +50,44 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         spinnerCategoria.setAdapter(adapter);
 
         editTextTiempo = findViewById(R.id.editTextTiempo);
+
         editTextIngredientes = findViewById(R.id.editTextIngredientes);
+        editTextIngredientes.setText("- ");
         editTextIngredientes.addTextChangedListener(new TextWatcher() {
-            boolean isEditing = false;
             @Override
-            public void afterTextChanged(Editable s) {
-                if (isEditing) return;
-                isEditing = true;
-
-                int cursorPos = editTextIngredientes.getSelectionStart();
-                String text = s.toString();
-                StringBuilder newText = new StringBuilder();
-
-                String[] lines = text.split("\n", -1);
-                for (int i = 0; i < lines.length; i++) {
-                    String line = lines[i];
-                    if (line.isEmpty()) {
-                        newText.append(line);
-                    } else if (!line.startsWith("- ")) {
-                        newText.append("- ").append(line);
-                    } else {
-                        newText.append(line);
-                    }
-                    if (i < lines.length - 1) newText.append("\n");
-                }
-
-                editTextIngredientes.setText(newText);
-                editTextIngredientes.setSelection(Math.min(cursorPos + 2, newText.length()));
-                isEditing = false;
-            }
+            public void afterTextChanged(Editable s) {}
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count == 1 && s.charAt(start) == '\n') {
+                    EditText et = editTextIngredientes;
+                    int cursor = et.getSelectionStart();
+                    et.getText().insert(cursor, "- ");
+                }
+            }
         });
 
         editTextPasos = findViewById(R.id.editTextPasos);
+        editTextPasos.setText("1. ");
         editTextPasos.addTextChangedListener(new TextWatcher() {
-            boolean isEditing = false;
             @Override
-            public void afterTextChanged(Editable s) {
-                if (isEditing) return;
-                isEditing = true;
-
-                int cursorPos = editTextPasos.getSelectionStart();
-                String text = s.toString();
-                StringBuilder newText = new StringBuilder();
-
-                String[] lines = text.split("\n", -1);
-                for (int i = 0; i < lines.length; i++) {
-                    String line = lines[i];
-                    if (line.isEmpty()) {
-                        newText.append(line);
-                    } else if (!line.matches("^\\d+\\.\\s.*")) {
-                        newText.append((i + 1)).append(". ").append(line);
-                    } else {
-                        newText.append(line);
-                    }
-                    if (i < lines.length - 1) newText.append("\n");
-                }
-
-                editTextPasos.setText(newText);
-                editTextPasos.setSelection(Math.min(cursorPos + 3, newText.length()));
-                isEditing = false;
-            }
+            public void afterTextChanged(Editable s) {}
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count == 1 && s.charAt(start) == '\n') {
+                    String text = s.toString();
+                    String[] lines = text.split("\n");
+                    int stepCount = 0;
+                    for(String line: lines) {
+                        if(line.matches("^\\d+\\.\\s.*")) {
+                            stepCount++;
+                        }
+                    }
+                    int nextNumber = stepCount + 1;
+                    EditText et = editTextPasos;
+                    int cursor = et.getSelectionStart();
+                    et.getText().insert(cursor, nextNumber + ". ");
+                }
+            }
         });
 
         imageViewFoto = findViewById(R.id.imageViewFoto);
