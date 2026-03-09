@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:padding="16dp"
-    android:background="@color/white">
+    android:padding="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -22,9 +21,6 @@
             android:layout_height="wrap_content"
             android:layout_width="0dp"
             android:maxWidth="500dp"
-            android:scrollHorizontally="false"
-            android:ellipsize="none"
-            android:singleLine="false"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/imageFavoritoDetalle"

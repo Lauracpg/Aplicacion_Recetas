@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:background="@color/white"
     android:clickable="true"
     android:focusable="true"
     app:cardElevation="8dp"
@@ -48,9 +47,7 @@
                 android:textColor="@color/white"
                 android:backgroundTint="@color/dark_purple"
                 android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:elevation="2dp"
-                android:clipToOutline="true"/>
+                android:padding="8dp"/>
         </LinearLayout>
         <ImageView
             android:id="@+id/imageFavorito"
