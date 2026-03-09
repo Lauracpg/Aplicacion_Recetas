@@ -69,7 +69,7 @@ public class DetalleRecetaFragment extends Fragment {
                     .setTitle(getString(R.string.confirmar_eliminacion))
                     .setMessage(getString(R.string.mensaje_confirmar_eliminacion))
                     .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                        if (listener != null && recetaActual != null) {
+                        if(listener != null && recetaActual != null) {
                             listener.onEliminarDesdeDetalle(recetaActual);
                         }
                     })
@@ -133,7 +133,7 @@ public class DetalleRecetaFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
+        if(requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
             Uri imgSelected = data.getData();
             if(imgSelected != null && recetaActual != null) {
                 // permiso para poder acceder a la imagen después

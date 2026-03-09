@@ -66,7 +66,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (count == 1 && s.charAt(start) == '\n') {
+                if(count == 1 && s.charAt(start) == '\n') {
                     int cursor = editTextIngredientes.getSelectionStart();
                     editTextIngredientes.getText().insert(cursor, "- ");
                 }
@@ -83,7 +83,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
 
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // cuando se pulsa enter, se calcula el siguiente número de paso
-                if (count == 1 && s.charAt(start) == '\n') {
+                if(count == 1 && s.charAt(start) == '\n') {
                     String[] lines = s.toString().split("\n");
                     int stepCount = 0;
                     // cuenta las líneas con "num. texto"

@@ -64,12 +64,12 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
 
         // evento al pulsar elemento de la lista
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onRecetaClick(r);
+            if(listener != null) listener.onRecetaClick(r);
         });
 
         // evento para botón eliminar receta
         holder.btnEliminar.setOnClickListener(v -> {
-            if (listener != null) listener.onRecetaEliminar(r);
+            if(listener != null) listener.onRecetaEliminar(r);
         });
     }
 

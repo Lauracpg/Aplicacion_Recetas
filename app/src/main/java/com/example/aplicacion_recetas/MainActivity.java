@@ -107,15 +107,15 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             int id = item.getItemId();
             ListaRecetasFragment listaFragment =
                     (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-            if (id == R.id.menu_agregar_receta) {
+            if(id == R.id.menu_agregar_receta) {
                 Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
                 startForResult.launch(intent);
-            } else if (id == R.id.menu_ver_recetas) { // todas
-                if (listaFragment != null) {
+            } else if(id == R.id.menu_ver_recetas) { // todas
+                if(listaFragment != null) {
                     listaFragment.mostrarRecetas();
                 }
-            } else if (id == R.id.menu_ver_recetas_favoritas) {
-                if (listaFragment != null) {
+            } else if(id == R.id.menu_ver_recetas_favoritas) {
+                if(listaFragment != null) {
                     listaFragment.mostrarFavoritas();
                 }
             }
@@ -155,10 +155,10 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_es) {
+        if(id == R.id.menu_es) {
             cambiarIdioma("es");
             return true;
-        } else if (id == R.id.menu_eu) {
+        } else if(id == R.id.menu_eu) {
             cambiarIdioma("eu");
             return true;
         }
@@ -198,11 +198,11 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     @Override
     public void onRecetaSeleccionada(Receta receta) {
         int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
             // mostrar receta en fragment de detalle
             DetalleRecetaFragment detalle = (DetalleRecetaFragment)
                     getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
-            if (detalle != null) {
+            if(detalle != null) {
                 detalle.mostrarReceta(receta);
             }
         } else { // vertical
@@ -227,12 +227,12 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     // Confirmar eliminación de la receta
     private void eliminarRecetaConfirmada() {
-        if (recetaEliminar != null) {
+        if(recetaEliminar != null) {
             db.eliminarReceta(recetaEliminar.id);
             ListaRecetasFragment lista = (ListaRecetasFragment)
                     getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
 
-            if (lista != null) {
+            if(lista != null) {
                 lista.refreshLista();
             }
 
@@ -254,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     // Lanzar notificación de receta agregada
     private void lanzarNotificacion(Receta receta) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.POST_NOTIFICATIONS},
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Crear canal de notificación si es necesario
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel canal = new NotificationChannel(
                     canalId,
                     "Canal Recetas",
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
         if(requestCode == 100) {
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ultimaRecetaAgregada != null) {
+                if(ultimaRecetaAgregada != null) {
                     enviarNotificacion(ultimaRecetaAgregada);
                 }
             } else {

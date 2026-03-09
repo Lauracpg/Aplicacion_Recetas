@@ -34,7 +34,7 @@ public class ListaRecetasFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         // comprueba si la actividad que contiene el fragment implementa la interfaz listener
-        if (context instanceof Listener) {
+        if(context instanceof Listener) {
             listener = (Listener) context;
         } else {
             throw new ClassCastException(context.toString() + " debe implementar ListaRecetasFragment.Listener");
@@ -59,7 +59,7 @@ public class ListaRecetasFragment extends Fragment {
             // cuando se pulsa una receta se notifica a la actividad
             @Override
             public void onRecetaClick(Receta receta) {
-                if (listener != null) listener.onRecetaSeleccionada(receta);
+                if(listener != null) listener.onRecetaSeleccionada(receta);
             }
 
             // cuando se quiere eliminar una receta se notifica a la actividad
@@ -93,8 +93,8 @@ public class ListaRecetasFragment extends Fragment {
 
     // Actualiza la lista mostrada en función del modo (todas o favoritas)
     public void refreshLista() {
-        if (adapter != null) {
-            if (mostrarFavoritas) { // solo favoritas
+        if(adapter != null) {
+            if(mostrarFavoritas) { // solo favoritas
                 adapter.setRecetas(db.getRecetasFavoritas());
             } else { // todas
                 adapter.setRecetas(db.getRecetas());
