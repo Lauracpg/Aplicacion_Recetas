@@ -89,11 +89,19 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         r.ingredientes = data.getStringExtra("ingredientes");
                         r.pasos = data.getStringExtra("pasos");
                         r.fotoUri = data.getStringExtra("fotoUri");
-                        db.agregarReceta(r); // guardar en db
+
+                        // guardar en db con id
+                        long id = db.agregarReceta(r);
+                        r.id = (int) id;
 
                         // actualizar la lista de recetas si está el fragmento
-                        ListaRecetasFragment listaRecetasFragment = (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-                        if (listaRecetasFragment != null) listaRecetasFragment.refreshLista();
+                        ListaRecetasFragment listaRecetasFragment =
+                                (ListaRecetasFragment) getSupportFragmentManager()
+                                .findFragmentById(R.id.fragment_lista_recetas);
+
+                        if (listaRecetasFragment != null) {
+                            listaRecetasFragment.refreshLista();
+                        }
 
                         // guardar la última receta añadida y lanzar notificación
                         ultimaRecetaAgregada = r;
