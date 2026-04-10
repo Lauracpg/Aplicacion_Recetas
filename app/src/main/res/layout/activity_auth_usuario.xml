@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:padding="24dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_purple">
+    android:orientation="vertical"
+    android:background="@color/light_purple"
+    android:fitsSystemWindows="true">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbarLogin"
@@ -17,67 +17,75 @@
         android:titleTextColor="@android:color/darker_gray"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="24dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:background="@android:color/white">
+            android:gravity="center"
+            android:padding="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/bienvenido"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/dark_purple"
-                android:layout_gravity="center"
-                android:layout_marginBottom="16dp"/>
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:background="@android:color/white">
 
-            <EditText
-                android:id="@+id/editTextNombre"
-                android:hint="@string/hint_nombre"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bienvenido"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/dark_purple"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="16dp"/>
 
-            <EditText
-                android:id="@+id/editTextEmail"
-                android:hint="@string/hint_email"
-                android:inputType="textEmailAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                <EditText
+                    android:id="@+id/editTextNombre"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_nombre"/>
 
-            <EditText
-                android:id="@+id/editTextPassword"
-                android:hint="@string/hint_password"
-                android:inputType="textPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                <EditText
+                    android:id="@+id/editTextEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_email"
+                    android:inputType="textEmailAddress"/>
 
-            <Button
-                android:id="@+id/btnRegistrar"
-                android:text="@string/btn_registrar"
-                android:backgroundTint="@color/dark_purple"
-                android:textColor="@android:color/white"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                <EditText
+                    android:id="@+id/editTextPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_password"
+                    android:inputType="textPassword"/>
 
-            <Button
-                android:id="@+id/btnLogin"
-                android:text="@string/btn_login"
-                android:backgroundTint="@color/dark_purple"
-                android:textColor="@android:color/white"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/btnRegistrar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_registrar"
+                    android:backgroundTint="@color/dark_purple"
+                    android:textColor="@android:color/white"/>
+
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_login"
+                    android:backgroundTint="@color/dark_purple"
+                    android:textColor="@android:color/white"/>
+
+            </LinearLayout>
 
         </LinearLayout>
-    </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>
