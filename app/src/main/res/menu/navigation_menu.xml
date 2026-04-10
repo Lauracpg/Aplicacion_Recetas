@@ -14,4 +14,9 @@
         android:id="@+id/menu_ver_recetas_favoritas"
         android:title="@string/ver_favoritas"
         android:icon="@android:drawable/ic_menu_view"/>
+
+    <item
+        android:id="@+id/menu_logout"
+        android:title="@string/cerrar_sesion"
+        android:icon="@android:drawable/ic_lock_power_off"/>
 </menu>

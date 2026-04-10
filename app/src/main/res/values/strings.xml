@@ -42,4 +42,11 @@
     <string name="ver_favoritas">Ver favoritas</string>
     <string name="ver_todas">Ver todas las recetas</string>
     <string name="volver_inicio">Volver al inicio</string>
+    <string name="bienvenido">Bienvenido</string>
+    <string name="hint_nombre">Nombre</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_registrar">Registrar</string>
+    <string name="btn_login">Iniciar sesión</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
 </resources>

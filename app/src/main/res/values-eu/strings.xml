@@ -42,5 +42,12 @@
     <string name="ver_favoritas">Ikusi gogokoenak</string>
     <string name="ver_todas">Ikusi errezeta guztiak</string>
     <string name="volver_inicio">Hasierara itzuli</string>
+    <string name="bienvenido">Ongi etorri</string>
+    <string name="hint_nombre">Izena</string>
+    <string name="hint_email">Emaila</string>
+    <string name="hint_password">Pasahitza</string>
+    <string name="btn_registrar">Erregistratu</string>
+    <string name="btn_login">Saioa hasi</string>
+    <string name="cerrar_sesion">Saioa itxi</string>
 
 </resources>

@@ -1,0 +1,46 @@
+package com.example.aplicacion_recetas;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+public class GestorSesionUsuario {
+    private static final String PREFS_NAME = "sesion_usuario";
+    private static final String KEY_ID = "id";
+    private static final String KEY_NOMBRE = "nombre";
+
+    private static final String KEY_EMAIL = "email";
+
+    private final SharedPreferences prefs;
+
+    public GestorSesionUsuario(Context context) {
+        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    public void guardarUsuario(int id, String nombre, String email) {
+        prefs.edit()
+                .putInt(KEY_ID, id)
+                .putString(KEY_NOMBRE, nombre)
+                .putString(KEY_EMAIL, email)
+                .apply();
+    }
+
+    public int getUserId() {
+        return prefs.getInt(KEY_ID, -1);
+    }
+
+    public String getUserName() {
+        return prefs.getString(KEY_NOMBRE, null);
+    }
+
+    public boolean estaLogueado() {
+        return getUserId() != -1;
+    }
+
+    public void cerrarSesion() {
+        prefs.edit().clear().apply();
+    }
+
+    public String getUserEmail() {
+        return prefs.getString(KEY_EMAIL, null);
+    }
+}

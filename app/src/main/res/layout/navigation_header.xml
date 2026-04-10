@@ -22,4 +22,22 @@
         android:textColor="@android:color/white"
         android:textSize="18sp"/>
 
+    <TextView
+        android:id="@+id/txtNombreUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usuario"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:layout_marginTop="12dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/txtEmailUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="email@test.com"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"/>
+
 </LinearLayout>

@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -49,6 +50,9 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        db = new DBHelper(this);
+
         // color de elementos de la barra inferior y superior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         // config del Navigation Drawer
         DrawerLayout dl = findViewById(R.id.drawer_layout);
         NavigationView nv = findViewById(R.id.navigation_view);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, dl, toolbar,
                 R.string.navigation_drawer_open,
@@ -74,6 +79,40 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         );
         dl.addDrawerListener(toggle);
         toggle.syncState();
+
+        View headerView = nv.getHeaderView(0);
+        TextView txtNombre = headerView.findViewById(R.id.txtNombreUsuario);
+        TextView txtEmail = headerView.findViewById(R.id.txtEmailUsuario);
+
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        txtNombre.setText(sesion.getUserName());
+        txtEmail.setText(sesion.getUserEmail());
+
+        // Listener del menú lateral NavigationView
+        nv.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            ListaRecetasFragment listaFragment =
+                    (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+            if(id == R.id.menu_agregar_receta) {
+                Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
+                startForResult.launch(intent);
+            } else if(id == R.id.menu_ver_recetas) { // todas
+                if(listaFragment != null) {
+                    listaFragment.mostrarRecetas();
+                }
+            } else if(id == R.id.menu_ver_recetas_favoritas) {
+                if(listaFragment != null) {
+                    listaFragment.mostrarFavoritas();
+                }
+            } else if(id == R.id.menu_logout) {
+                sesion.cerrarSesion();
+                Intent intent = new Intent(MainActivity.this, AuthUsuarioActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            dl.closeDrawer(GravityCompat.START);
+            return true;
+        });
 
         // registro del launcher para recibir datos de AgregarRecetaActivity
         startForResult = registerForActivityResult(
@@ -110,28 +149,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 }
         );
 
-        // Listener del menú lateral NavigationView
-        nv.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            ListaRecetasFragment listaFragment =
-                    (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-            if(id == R.id.menu_agregar_receta) {
-                Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
-                startForResult.launch(intent);
-            } else if(id == R.id.menu_ver_recetas) { // todas
-                if(listaFragment != null) {
-                    listaFragment.mostrarRecetas();
-                }
-            } else if(id == R.id.menu_ver_recetas_favoritas) {
-                if(listaFragment != null) {
-                    listaFragment.mostrarFavoritas();
-                }
-            }
-            dl.closeDrawer(GravityCompat.START);
-            return true;
-        });
         // inicializar db y botón de '+' (agregar receta)
-        db = new DBHelper(this);
         btnAgregar = findViewById(R.id.btnAgregarReceta);
         btnAgregar.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
