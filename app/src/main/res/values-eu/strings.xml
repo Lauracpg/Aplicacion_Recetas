@@ -46,8 +46,15 @@
     <string name="hint_nombre">Izena</string>
     <string name="hint_email">Emaila</string>
     <string name="hint_password">Pasahitza</string>
+    <string name="email_password">Emaila eta pasahitza nahitaezkoak</string>
+    <string name="nombre_email_password">Eremu guztiak derrigorrezkoak dira</string>
+    <string name="email_invalido">Email baliogabea</string>
     <string name="btn_registrar">Erregistratu</string>
     <string name="btn_login">Saioa hasi</string>
+    <string name="registrado">Erabiltzailea erregistrartu da</string>
     <string name="cerrar_sesion">Saioa itxi</string>
+   <string name="supermercados">Ikusi supermerkatuak</string>
+    <string name="ubicacion">Zure kokapena</string>
+    <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
 
 </resources>

@@ -46,7 +46,14 @@
     <string name="hint_nombre">Nombre</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Contraseña</string>
+    <string name="email_password">Email y contraseña obligatorios</string>
+    <string name="nombre_email_password">Todos los campos son obligatorios</string>
+    <string name="email_invalido">Email inválido</string>
     <string name="btn_registrar">Registrar</string>
+    <string name="registrado">Usuario registrado correctamente</string>
     <string name="btn_login">Iniciar sesión</string>
     <string name="cerrar_sesion">Cerrar sesión</string>
+    <string name="supermercados">Ver supermercados</string>
+    <string name="ubicacion">Tu ubicación</string>
+    <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
 </resources>

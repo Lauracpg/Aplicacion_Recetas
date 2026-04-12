@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -108,6 +109,20 @@ public class AuthUsuarioActivity extends AppCompatActivity {
         String email = editTextEmail.getText().toString().trim();
         String password = editTextPassword.getText().toString().trim();
 
+        if (nombre.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this,
+                    getString(R.string.nombre_email_password),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this,
+                    getString(R.string.email_invalido),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Data input = new Data.Builder()
                 .putString(AppWorker.KEY_ACCION, "registrar")
                 .putString(AppWorker.KEY_NOMBRE, nombre)
@@ -119,28 +134,43 @@ public class AuthUsuarioActivity extends AppCompatActivity {
                 .setInputData(input)
                 .build();
 
-        WorkManager.getInstance(AuthUsuarioActivity.this).getWorkInfoByIdLiveData(request.getId())
-                .observe(AuthUsuarioActivity.this, workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        if (workInfo.getState() == WorkInfo.State.FAILED) {
-                            String error = workInfo.getOutputData().getString("error");
-                            Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        String response = workInfo.getOutputData().getString("response");
-                        if (response == null || response.isEmpty()) {
-                            Toast.makeText(this, "Respuesta vacía del servidor", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        Toast.makeText(this, "Usuario registrado correctamente", Toast.LENGTH_SHORT).show();
-                    }
-                });
         WorkManager.getInstance(this).enqueue(request);
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .removeObservers(AuthUsuarioActivity.this);
+
+        WorkManager.getInstance(AuthUsuarioActivity.this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(AuthUsuarioActivity.this, workInfo -> {
+                    if (workInfo == null || !workInfo.getState().isFinished()) return;
+
+                    if (workInfo.getState() == WorkInfo.State.FAILED) {
+                        String error = workInfo.getOutputData().getString("error");
+                        Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    Toast.makeText(this, getString(R.string.registrado), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void loginUsuario() {
         String email = editTextEmail.getText().toString().trim();
         String password = editTextPassword.getText().toString().trim();
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this,
+                    getString(R.string.email_password),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this,
+                    getString(R.string.email_invalido),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Data input = new Data.Builder()
                 .putString(AppWorker.KEY_ACCION, "login")
@@ -152,40 +182,45 @@ public class AuthUsuarioActivity extends AppCompatActivity {
                 .setInputData(input)
                 .build();
 
-        WorkManager.getInstance(this).getWorkInfoByIdLiveData(request.getId())
+        WorkManager.getInstance(this).enqueue(request);
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .removeObservers(this);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
-                    if (workInfo != null && workInfo.getState().isFinished()) {
-                        if (workInfo.getState() == WorkInfo.State.FAILED) {
-                            String error = workInfo.getOutputData().getString("error");
-                            Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        String response = workInfo.getOutputData().getString("response");
-                        if (response == null || response.isEmpty()) {
-                            Toast.makeText(this, "Respuesta vacía del servidor", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+                    if (workInfo == null || !workInfo.getState().isFinished()) return;
+                    if (workInfo.getState() == WorkInfo.State.FAILED) {
+                        String error = workInfo.getOutputData().getString("error");
+                        Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
+                        return;
+                    }
 
-                        try {
-                            JSONObject json = new JSONObject(response);
-                            if(json.getBoolean("success")) {
-                                int id = json.getInt("id");
-                                String nombre = json.getString("nombre");
-                                String emailServer = json.optString("email", email);
+                    String response = workInfo.getOutputData().getString("response");
+                    if (response == null || response.isEmpty()) {
+                        Toast.makeText(this, "Respuesta vacía del servidor", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                                new GestorSesionUsuario(AuthUsuarioActivity.this).guardarUsuario(id, nombre, emailServer);
-                                Toast.makeText(AuthUsuarioActivity.this, "Bienvenido " + nombre, Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(AuthUsuarioActivity.this, MainActivity.class));
-                                finish();
-                            } else {
-                                Toast.makeText(this, json.getString("message"), Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(this, "Error parseando respuesta", Toast.LENGTH_SHORT).show();
+                    try {
+                        JSONObject json = new JSONObject(response);
+                        if(json.getBoolean("success")) {
+                            int id = json.getInt("id");
+                            String nombre = json.getString("nombre");
+                            String emailServer = json.optString("email", email);
+
+                            new GestorSesionUsuario(AuthUsuarioActivity.this).guardarUsuario(id, nombre, emailServer);
+                            Toast.makeText(AuthUsuarioActivity.this, getString(R.string.bienvenido) + " " + nombre, Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(AuthUsuarioActivity.this, MainActivity.class));
+                            finish();
+                        } else {
+                            Toast.makeText(this, json.getString("message"), Toast.LENGTH_SHORT).show();
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "Error parseando respuesta", Toast.LENGTH_SHORT).show();
                     }
                 });
-        WorkManager.getInstance(this).enqueue(request);
     }
 }

@@ -104,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 if(listaFragment != null) {
                     listaFragment.mostrarFavoritas();
                 }
+            } else if(id == R.id.menu_supermercados) {
+                Intent intent = new Intent(MainActivity.this, SupermercadosActivity.class);
+                startActivity(intent);
             } else if(id == R.id.menu_logout) {
                 sesion.cerrarSesion();
                 Intent intent = new Intent(MainActivity.this, AuthUsuarioActivity.class);

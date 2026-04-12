@@ -16,6 +16,11 @@
         android:icon="@android:drawable/ic_menu_view"/>
 
     <item
+        android:id="@+id/menu_supermercados"
+        android:title="@string/supermercados"
+        android:icon="@android:drawable/ic_menu_mapmode"/>
+
+    <item
         android:id="@+id/menu_logout"
         android:title="@string/cerrar_sesion"
         android:icon="@android:drawable/ic_lock_power_off"/>
