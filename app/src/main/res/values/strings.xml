@@ -55,5 +55,6 @@
     <string name="cerrar_sesion">Cerrar sesión</string>
     <string name="supermercados">Ver supermercados</string>
     <string name="ubicacion">Tu ubicación</string>
+    <string name="supermercados_cerca">Supermercados</string>
     <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
 </resources>

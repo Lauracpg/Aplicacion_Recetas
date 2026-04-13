@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -35,8 +34,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.Locale;
-
 public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener,
         ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     DBHelper db;
@@ -48,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GestorIdioma.aplicarIdioma(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -185,42 +184,25 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if(id == R.id.menu_es) {
-            cambiarIdioma("es");
+            GestorIdioma.setIdioma(this, "es");
+            recreate();
             return true;
         } else if(id == R.id.menu_eu) {
-            cambiarIdioma("eu");
+            GestorIdioma.setIdioma(this, "eu");
+            recreate();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    // Guardar idioma seleccionado en SharedPreferences
-    private void guardarIdioma(String codeIdioma) {
-        SharedPreferences prefs = getSharedPreferences("config", MODE_PRIVATE);
-        prefs.edit().putString("lang", codeIdioma).apply();
-    }
-    // Reiniciar activity para aplica el idioma nuevo
-    private void cambiarIdioma(String codeIdioma) {
-        guardarIdioma(codeIdioma);
-        finish();
-        startActivity(getIntent());
-    }
-
-    // Ajustar contexto para el idioma guardado
     @Override
-    protected  void attachBaseContext(Context newBase) {
-        SharedPreferences prefs = newBase.getSharedPreferences("config", MODE_PRIVATE);
-        String lang = prefs.getString("lang", Locale.getDefault().getLanguage());
+    protected void onResume() {
+        super.onResume();
 
-        Locale locale = new Locale(lang);
-        Locale.setDefault(locale);
-
-        Configuration config = newBase.getResources().getConfiguration();
-        config.setLocale(locale);
-        config.setLayoutDirection(locale);
-
-        Context context = newBase.createConfigurationContext(config);
-        super.attachBaseContext(context);
+        if (GestorIdioma.languageChanged) {
+            GestorIdioma.languageChanged = false;
+            recreate();
+        }
     }
 
     // Maneja la selección de receta desde la lista

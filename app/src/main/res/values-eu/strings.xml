@@ -54,6 +54,7 @@
     <string name="registrado">Erabiltzailea erregistrartu da</string>
     <string name="cerrar_sesion">Saioa itxi</string>
    <string name="supermercados">Ikusi supermerkatuak</string>
+    <string name="supermercados_cerca">Supermerkatuak</string>
     <string name="ubicacion">Zure kokapena</string>
     <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
 

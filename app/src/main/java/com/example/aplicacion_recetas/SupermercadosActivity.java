@@ -3,12 +3,17 @@ package com.example.aplicacion_recetas;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 
@@ -32,8 +37,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class SupermercadosActivity extends FragmentActivity implements OnMapReadyCallback {
+public class SupermercadosActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final int LOCATION_PERMISSION_REQUEST = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private GoogleMap mMap;
@@ -44,6 +48,8 @@ public class SupermercadosActivity extends FragmentActivity implements OnMapRead
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GestorIdioma.aplicarIdioma(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_supermercados);
 
@@ -51,7 +57,50 @@ public class SupermercadosActivity extends FragmentActivity implements OnMapRead
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.supermercados_cerca);
+        }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                            View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
+        }
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_idioma, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.menu_es) {
+            GestorIdioma.setIdioma(this, "es");
+            recreate();
+            return true;
+        } else if(id == R.id.menu_eu) {
+            GestorIdioma.setIdioma(this, "eu");
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
