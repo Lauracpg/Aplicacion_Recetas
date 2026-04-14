@@ -9,6 +9,7 @@ public class GestorSesionUsuario {
     private static final String KEY_NOMBRE = "nombre";
 
     private static final String KEY_EMAIL = "email";
+    private static final String KEY_FOTO = "foto";
 
     private final SharedPreferences prefs;
 
@@ -42,5 +43,13 @@ public class GestorSesionUsuario {
 
     public String getUserEmail() {
         return prefs.getString(KEY_EMAIL, null);
+    }
+
+    public void guardarFoto(String ruta) {
+        prefs.edit().putString(KEY_FOTO, ruta).apply();
+    }
+
+    public String getFoto() {
+        return prefs.getString(KEY_FOTO, null);
     }
 }

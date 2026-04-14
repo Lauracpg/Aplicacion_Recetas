@@ -34,9 +34,9 @@ public class AppWorker extends Worker {
         try {
             URL url;
             if ("registrar".equals(accion)) {
-                url = new URL("http://34.175.31.18:81/registro.php");
+                url = new URL("http://34.175.70.22:81/registro.php");
             } else if ("login".equals(accion)) {
-                url = new URL("http://34.175.31.18:81/login.php");
+                url = new URL("http://34.175.70.22:81/login.php");
             } else {
                 return Result.failure();
             }

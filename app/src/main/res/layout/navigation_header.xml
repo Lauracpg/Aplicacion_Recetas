@@ -8,19 +8,15 @@
     android:gravity="bottom">
 
     <ImageView
-        android:id="@+id/imgLogo"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:src="@drawable/logo_app_recetas"
-        android:contentDescription="@string/app_name"/>
-
-    <TextView
-        android:id="@+id/textViewNombreApp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"/>
+        android:id="@+id/imgPerfil"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/ic_launcher_foreground"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="Foto perfil"
+        android:clickable="true"
+        android:focusable="true"/>
 
     <TextView
         android:id="@+id/txtNombreUsuario"

@@ -9,11 +9,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +37,19 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener,
         ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
@@ -42,6 +59,10 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     private ActivityResultLauncher<Intent> startForResult;
     private Receta ultimaRecetaAgregada;
     private Receta recetaEliminar;
+
+    private ActivityResultLauncher<Intent> takePictureLauncher;
+    private ImageView imgPerfil;
+    private Bitmap fotoPerfil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,10 +103,62 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         View headerView = nv.getHeaderView(0);
         TextView txtNombre = headerView.findViewById(R.id.txtNombreUsuario);
         TextView txtEmail = headerView.findViewById(R.id.txtEmailUsuario);
+        imgPerfil = headerView.findViewById(R.id.imgPerfil);
 
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
         txtNombre.setText(sesion.getUserName());
         txtEmail.setText(sesion.getUserEmail());
+
+        String rutaFoto = sesion.getFoto();
+
+        if (rutaFoto != null) {
+            String urlCompleta = "http://34.175.70.22:81/" + rutaFoto;
+            new Thread(() -> {
+                try {
+                    URL url = new URL(urlCompleta);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.connect();
+
+                    InputStream is = conn.getInputStream();
+                    Bitmap bitmap = BitmapFactory.decodeStream(is);
+
+                    runOnUiThread(() -> imgPerfil.setImageBitmap(bitmap));
+
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                    Log.e("IMG", "Error cargando imagen", e);
+
+                }
+            }).start();
+        }
+
+        takePictureLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if(result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Bundle extras = result.getData().getExtras();
+
+                        if (extras != null) {
+                            Object data = extras.get("data");
+
+                            if (data instanceof Bitmap) {
+                                Bitmap bitmap = (Bitmap) data;
+
+                                fotoPerfil = bitmap;
+                                imgPerfil.setImageBitmap(bitmap);
+
+                                subirFotoPerfil(bitmap);
+                            } else {
+                                Log.e("CAMARA", "data no es Bitmap");
+                            }
+                        } else {
+                            Log.e("CAMARA", "Extras null");
+                        }
+                    }
+                }
+        );
+
+        imgPerfil.setOnClickListener(v -> abrirCamara());
 
         // Listener del menú lateral NavigationView
         nv.setNavigationItemSelectedListener(item -> {
@@ -170,6 +243,50 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 }
             }
         });
+    }
+
+    private void subirFotoPerfil(Bitmap bitmap) {
+        try {
+            File file = new File(getCacheDir(), "foto.jpg");
+
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
+            fos.flush();
+            fos.close();
+
+            GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+            String email = sesion.getUserEmail();
+
+            Data input = new Data.Builder()
+                    .putString("email", email)
+                    .putString("ruta_local", file.getAbsolutePath())
+                    .build();
+
+            OneTimeWorkRequest request =
+                    new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
+                            .setInputData(input)
+                            .build();
+
+            WorkManager.getInstance(this).enqueue(request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void abrirCamara() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.CAMERA},
+                    200
+            );
+            return;
+        }
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePictureLauncher.launch(intent);
     }
 
     // Inflar menú para selección de idioma
@@ -320,14 +437,14 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if(requestCode == 100) {
-            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if(ultimaRecetaAgregada != null) {
-                    enviarNotificacion(ultimaRecetaAgregada);
-                }
+        if (requestCode == 200) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirCamara();
             } else {
-                Toast.makeText(this, getString(R.string.no_notificaciones), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Permiso de cámara denegado",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
