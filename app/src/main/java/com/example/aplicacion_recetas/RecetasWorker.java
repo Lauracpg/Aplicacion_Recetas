@@ -5,10 +5,9 @@ import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,19 +38,43 @@ public class RecetasWorker extends Worker {
             Uri.Builder builder = new Uri.Builder()
                     .appendQueryParameter("accion", accion);
 
+            GestorSesionUsuario sesion =
+                    new GestorSesionUsuario(getApplicationContext());
+            int idUsuario = sesion.getUserId();
+
             if ("insertar".equals(accion)) {
                 builder.appendQueryParameter("titulo", getInputData().getString("titulo"))
                         .appendQueryParameter("categoria", getInputData().getString("categoria"))
                         .appendQueryParameter("tiempo", String.valueOf(getInputData().getInt("tiempo", 0)))
                         .appendQueryParameter("ingredientes", getInputData().getString("ingredientes"))
                         .appendQueryParameter("pasos", getInputData().getString("pasos"))
-                        .appendQueryParameter("fotoUri", getInputData().getString("fotoUri"));
+                        .appendQueryParameter("fotoUri", getInputData().getString("fotoUri"))
+                        .appendQueryParameter("idUsuario", String.valueOf(getInputData().getInt("idUsuario", 0)));
+
+            } else if("obtener".equals(accion)) {
+                builder.appendQueryParameter("idUsuario", String.valueOf(idUsuario));
+
+            } else if ("eliminar".equals(accion)) {
+                builder.appendQueryParameter("id",
+                                String.valueOf(getInputData().getInt("id", -1)))
+                        .appendQueryParameter("idUsuario",
+                                String.valueOf(idUsuario));
+
+            } else if ("favorito".equals(accion)) {
+                builder.appendQueryParameter("id",
+                                String.valueOf(getInputData().getInt("id", 0)))
+                        .appendQueryParameter("idUsuario",
+                                String.valueOf(idUsuario))
+                        .appendQueryParameter("favorita",
+                                String.valueOf(getInputData().getInt("favorita", 0)));
             }
 
             String params = builder.build().getEncodedQuery();
 
             OutputStream os = conn.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+            BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(os, "UTF-8"));
+
             writer.write(params);
             writer.flush();
             writer.close();
@@ -73,19 +96,20 @@ public class RecetasWorker extends Worker {
 
             String json = response.toString();
             Log.d("RECETAS_API", json);
-            JSONObject obj = new JSONObject(json);
-            boolean success = obj.optBoolean("success", false);
-            if (success) {
-                return Result.success();
-            } else {
-                Log.e("RECETAS_API", obj.optString("error"));
-                return Result.failure();
-            }
+
+            return Result.success(
+                    new Data.Builder()
+                            .putString("response", json)
+                            .build()
+            );
 
         } catch (Exception e) {
             e.printStackTrace();
+            return Result.failure(
+                    new Data.Builder()
+                            .putString("error", e.getMessage())
+                            .build()
+            );
         }
-
-        return Result.failure();
     }
 }

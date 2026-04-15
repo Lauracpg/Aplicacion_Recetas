@@ -25,10 +25,10 @@ public class ListaRecetasFragment extends Fragment {
     private Listener listener;
     private RecyclerView recyclerView;
     private RecetaAdapter adapter;
-    private DBHelper db;
 
     // indica si se están mostrando solo las recetas favoritas
     private boolean mostrarFavoritas = false;
+    private List<Receta> recetasActuales = new ArrayList<>();
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -52,10 +52,8 @@ public class ListaRecetasFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setHasFixedSize(true); // el tamaño del RecyclerView no cambia
 
-        db = new DBHelper(view.getContext());
         // crea el adapter con una lista vacía al principio
         adapter = new RecetaAdapter(new ArrayList<>(), new RecetaAdapter.OnRecetaClickListener() {
-
             // cuando se pulsa una receta se notifica a la actividad
             @Override
             public void onRecetaClick(Receta receta) {
@@ -70,42 +68,33 @@ public class ListaRecetasFragment extends Fragment {
         });
         // asignar el adapter al RecyclerView
         recyclerView.setAdapter(adapter);
-        // carga las recetas desde la db
-        refreshLista();
         return view;
+    }
+
+    public void setRecetas(List<Receta> recetas) {
+        this.recetasActuales = recetas;
+        adapter.setRecetas(recetas);
     }
 
     // Muestra todas las recetas almacenadas
     public void mostrarRecetas() {
         mostrarFavoritas = false;
-        List<Receta> todas = db.getRecetas();
-        // actualiza el adapter con la lista obtenida
-        adapter.setRecetas(todas);
+        adapter.setRecetas(recetasActuales);
     }
 
     // Muestra solo las recetas favoritas
 
     public void mostrarFavoritas() {
         mostrarFavoritas = true;
-        List<Receta> favoritas = db.getRecetasFavoritas();
+        List<Receta> favoritas = new ArrayList<>();
+        for(Receta r : recetasActuales) {
+            if (r.favorita) favoritas.add(r);
+        }
         adapter.setRecetas(favoritas);
     }
 
     // Actualiza la lista mostrada en función del modo (todas o favoritas)
     public void refreshLista() {
-        if(adapter != null) {
-            if(mostrarFavoritas) { // solo favoritas
-                adapter.setRecetas(db.getRecetasFavoritas());
-            } else { // todas
-                adapter.setRecetas(db.getRecetas());
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // cada vez que el fragment vuelve a primer plano se refresca la lista
-        refreshLista();
+        adapter.setRecetas(recetasActuales);
     }
 }

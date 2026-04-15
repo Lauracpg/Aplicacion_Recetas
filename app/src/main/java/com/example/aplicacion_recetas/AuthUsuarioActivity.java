@@ -209,9 +209,16 @@ public class AuthUsuarioActivity extends AppCompatActivity {
                             int id = json.getInt("id");
                             String nombre = json.getString("nombre");
                             String emailServer = json.optString("email", email);
+                            String foto = json.optString("foto", null);
 
-                            new GestorSesionUsuario(AuthUsuarioActivity.this).guardarUsuario(id, nombre, emailServer);
+
+                            GestorSesionUsuario sesion = new GestorSesionUsuario(AuthUsuarioActivity.this);
                             Toast.makeText(AuthUsuarioActivity.this, getString(R.string.bienvenido) + " " + nombre, Toast.LENGTH_SHORT).show();
+                            sesion.guardarUsuario(id, nombre, emailServer);
+                            if (foto != null && !foto.isEmpty()) {
+                                sesion.guardarFoto(foto);
+                            }
+
                             startActivity(new Intent(AuthUsuarioActivity.this, MainActivity.class));
                             finish();
                         } else {

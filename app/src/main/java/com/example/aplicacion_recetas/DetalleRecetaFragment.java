@@ -2,10 +2,8 @@ package com.example.aplicacion_recetas;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,6 +17,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public class DetalleRecetaFragment extends Fragment {
     private TextView textViewTitulo, textViewCategoria, textViewTiempo, textViewIngredientes, textViewPasos;
@@ -98,23 +103,36 @@ public class DetalleRecetaFragment extends Fragment {
         imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
         imageFavDetalle.setOnClickListener(v -> {
             if(recetaActual != null) {
-                // cambia estado favorita
-                recetaActual.favorita = !recetaActual.favorita;
-                imageFavDetalle.setImageResource(
-                        recetaActual.favorita
-                        ? android.R.drawable.btn_star_big_on
-                        : android.R.drawable.btn_star_big_off
-                );
-                // guardar cambio en db
-                DBHelper db = new DBHelper(requireContext());
-                ContentValues values = new ContentValues();
-                values.put(DBHelper.COLUMN_FAVORITA, recetaActual.favorita ? 1 : 0);
-                SQLiteDatabase database = db.getWritableDatabase();
-                database.update(DBHelper.TABLE_RECETAS,
-                        values,
-                        DBHelper.COLUMN_ID + "=?",
-                        new String[]{String.valueOf(recetaActual.id)});
-                database.close();
+                if (recetaActual == null) return;
+                boolean nuevoEstado = !recetaActual.favorita;
+
+                GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
+                Data input = new Data.Builder()
+                        .putString("accion", "favorito")
+                        .putInt("id", recetaActual.id)
+                        .putInt("idUsuario", sesion.getUserId())
+                        .putInt("favorita", recetaActual.favorita ? 1 : 0)
+                        .build();
+
+                OneTimeWorkRequest request =
+                        new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                                .setInputData(input)
+                                .build();
+
+                WorkManager.getInstance(requireContext()).enqueue(request);
+                WorkManager.getInstance(requireContext())
+                        .getWorkInfoByIdLiveData(request.getId())
+                        .observe(getViewLifecycleOwner(), workInfo -> {
+
+                            if (workInfo != null && workInfo.getState().isFinished()) {
+                                recetaActual.favorita = nuevoEstado;
+                                imageFavDetalle.setImageResource(
+                                        nuevoEstado
+                                                ? android.R.drawable.btn_star_big_on
+                                                : android.R.drawable.btn_star_big_off
+                                );
+                            }
+                        });
             }
         });
         return view;
@@ -146,20 +164,35 @@ public class DetalleRecetaFragment extends Fragment {
                 imageViewFoto.setVisibility(View.VISIBLE);
                 recetaActual.fotoUri = imgSelected.toString();
 
-                // actualizar db con la foto nueva
-                DBHelper db = new DBHelper(requireContext());
-                SQLiteDatabase database = db.getWritableDatabase();
+                try {
+                    InputStream is = requireContext().getContentResolver().openInputStream(imgSelected);
+                    File file = new File(requireContext().getCacheDir(), "receta_" + recetaActual.id + ".jpg");
+                    FileOutputStream fos = new FileOutputStream(file);
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = is.read(buffer)) > 0) {
+                        fos.write(buffer, 0, length);
+                    }
+                    fos.close();
+                    is.close();
 
-                ContentValues values = new ContentValues();
-                values.put(DBHelper.COLUMN_FOTO, recetaActual.fotoUri);
+                    GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
+                    Data input = new Data.Builder()
+                            .putString("tipo", "receta")
+                            .putInt("id", recetaActual.id)
+                            .putInt("idUsuario", sesion.getUserId())
+                            .putString("ruta_local", file.getAbsolutePath())
+                            .build();
 
-                database.update(
-                        DBHelper.TABLE_RECETAS,
-                        values,
-                        DBHelper.COLUMN_ID + "=?",
-                        new String[]{String.valueOf(recetaActual.id)}
-                );
-                database.close();
+                    OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
+                            .setInputData(input)
+                            .build();
+
+                    WorkManager.getInstance(requireContext()).enqueue(request);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

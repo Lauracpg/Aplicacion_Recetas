@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import java.util.List;
 
@@ -55,11 +58,24 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
             r.favorita = !r.favorita; // cambia
             // se actualiza el icono
             holder.imgFav.setImageResource(
-                    r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
+                    r.favorita
+                            ? android.R.drawable.btn_star_big_on
+                            : android.R.drawable.btn_star_big_off
             );
-            // guardar en la db
-            DBHelper db = new DBHelper(context);
-            db.updateFavorita(r.id, r.favorita);
+
+            GestorSesionUsuario sesion = new GestorSesionUsuario(context);
+            Data input = new Data.Builder()
+                    .putString("accion", "favorito")
+                    .putInt("id", r.id)
+                    .putInt("idUsuario", sesion.getUserId())
+                    .putInt("favorita", r.favorita ? 1 : 0)
+                    .build();
+
+            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                    .setInputData(input)
+                    .build();
+
+            WorkManager.getInstance(context).enqueue(request);
         });
 
         // evento al pulsar elemento de la lista

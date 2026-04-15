@@ -9,13 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,15 +43,22 @@ import androidx.work.WorkManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener,
         ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
-    DBHelper db;
     FloatingActionButton btnAgregar;
 
     private ActivityResultLauncher<Intent> startForResult;
@@ -69,8 +75,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        db = new DBHelper(this);
 
         // color de elementos de la barra inferior y superior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -108,16 +112,15 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         txtNombre.setText(sesion.getUserName());
         txtEmail.setText(sesion.getUserEmail());
 
-        String rutaFoto = sesion.getFoto();
+        cargarRecetasServidor();
 
+        String rutaFoto = sesion.getFoto();
         if (rutaFoto != null) {
             String urlCompleta = "http://34.175.70.22:81/" + rutaFoto;
             new Thread(() -> {
                 try {
                     URL url = new URL(urlCompleta);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.connect();
-
                     InputStream is = conn.getInputStream();
                     Bitmap bitmap = BitmapFactory.decodeStream(is);
 
@@ -135,24 +138,9 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if(result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Bundle extras = result.getData().getExtras();
-
-                        if (extras != null) {
-                            Object data = extras.get("data");
-
-                            if (data instanceof Bitmap) {
-                                Bitmap bitmap = (Bitmap) data;
-
-                                fotoPerfil = bitmap;
-                                imgPerfil.setImageBitmap(bitmap);
-
-                                subirFotoPerfil(bitmap);
-                            } else {
-                                Log.e("CAMARA", "data no es Bitmap");
-                            }
-                        } else {
-                            Log.e("CAMARA", "Extras null");
-                        }
+                        Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
+                        imgPerfil.setImageBitmap(bitmap);
+                        subirFotoPerfil(bitmap);
                     }
                 }
         );
@@ -195,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         // crear objeto Receta con los datos recibidos
                         Intent data = result.getData();
+
                         Receta r = new Receta();
                         r.titulo = data.getStringExtra("titulo");
                         r.categoria = data.getStringExtra("categoria");
@@ -203,40 +192,33 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         r.pasos = data.getStringExtra("pasos");
                         r.fotoUri = data.getStringExtra("fotoUri");
 
-                        // guardar en db con id
-                        long id = db.agregarReceta(r);
-
                         Data input = new Data.Builder()
                                 .putString("accion", "insertar")
-                                .putString("titulo", r.titulo)
-                                .putString("categoria", r.categoria)
-                                .putInt("tiempo", r.tiempo)
-                                .putString("ingredientes", r.ingredientes)
-                                .putString("pasos", r.pasos)
-                                .putString("fotoUri", r.fotoUri)
+                                .putString("titulo", data.getStringExtra("titulo"))
+                                .putString("categoria", data.getStringExtra("categoria"))
+                                .putInt("tiempo", data.getIntExtra("tiempo", 0))
+                                .putString("ingredientes", data.getStringExtra("ingredientes"))
+                                .putString("pasos", data.getStringExtra("pasos"))
+                                .putString("fotoUri", data.getStringExtra("fotoUri"))
+                                .putInt("idUsuario", sesion.getUserId())
                                 .build();
 
-                        OneTimeWorkRequest request =
-                                new OneTimeWorkRequest.Builder(RecetasWorker.class)
-                                        .setInputData(input)
-                                        .build();
+                        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                                .setInputData(input)
+                                .build();
 
                         WorkManager.getInstance(this).enqueue(request);
 
-                        r.id = (int) id;
+                        WorkManager.getInstance(this)
+                                .getWorkInfoByIdLiveData(request.getId())
+                                .observe(this, workInfo -> {
+                                    if (workInfo != null && workInfo.getState().isFinished()) {
+                                        cargarRecetasServidor();
+                                    }
+                                });
 
-                        // actualizar la lista de recetas si está el fragmento
-                        ListaRecetasFragment listaRecetasFragment =
-                                (ListaRecetasFragment) getSupportFragmentManager()
-                                .findFragmentById(R.id.fragment_lista_recetas);
-
-                        if (listaRecetasFragment != null) {
-                            listaRecetasFragment.refreshLista();
-                        }
-
-                        // guardar la última receta añadida y lanzar notificación
-                        ultimaRecetaAgregada = r;
-                        lanzarNotificacion(ultimaRecetaAgregada);
+                        cargarRecetasServidor();
+                        lanzarNotificacion(r);
                     }
                 }
         );
@@ -268,14 +250,13 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
             FileOutputStream fos = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
-            fos.flush();
             fos.close();
 
             GestorSesionUsuario sesion = new GestorSesionUsuario(this);
-            String email = sesion.getUserEmail();
 
             Data input = new Data.Builder()
-                    .putString("email", email)
+                    .putString("tipo", "perfil")
+                    .putString("email", sesion.getUserEmail())
                     .putString("ruta_local", file.getAbsolutePath())
                     .build();
 
@@ -292,16 +273,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     }
 
     private void abrirCamara() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.CAMERA},
-                    200
-            );
-            return;
-        }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePictureLauncher.launch(intent);
     }
@@ -329,14 +300,70 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void cargarRecetasServidor() {
+        new Thread(() -> {
+            try {
+                GestorSesionUsuario sesion = new GestorSesionUsuario(this);
 
-        if (GestorIdioma.languageChanged) {
-            GestorIdioma.languageChanged = false;
-            recreate();
-        }
+                URL url = new URL("http://34.175.70.22:81/recetas.php");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+
+                String params = new Uri.Builder()
+                        .appendQueryParameter("accion", "obtener")
+                        .appendQueryParameter("idUsuario", String.valueOf(sesion.getUserId()))
+                        .build().getEncodedQuery();
+
+                OutputStream os = conn.getOutputStream();
+                os.write(params.getBytes());
+                os.close();
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream())
+                );
+
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject json = new JSONObject(response.toString());
+                if(json.getBoolean("success")) {
+                    List<Receta> listaRecetas = new ArrayList<>();
+                    JSONArray recetas = json.getJSONArray("recetas");
+
+                    for (int i = 0; i < recetas.length(); i++) {
+                        JSONObject obj = recetas.getJSONObject(i);
+
+                        Receta r = new Receta();
+                        r.id = obj.getInt("id");
+                        r.titulo = obj.getString("titulo");
+                        r.categoria = obj.getString("categoria");
+                        r.tiempo = obj.getInt("tiempo");
+                        r.ingredientes = obj.getString("ingredientes");
+                        r.pasos = obj.getString("pasos");
+                        r.fotoUri = obj.getString("fotoUri");
+                        r.favorita = obj.getInt("favorita") == 1;
+
+                        listaRecetas.add(r);
+                    }
+
+                    runOnUiThread(() -> {
+                        ListaRecetasFragment lista = (ListaRecetasFragment)
+                                getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+                        if(lista != null) {
+                            lista.setRecetas(listaRecetas);
+                        }
+                    });
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // Maneja la selección de receta desde la lista
@@ -372,19 +399,34 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     // Confirmar eliminación de la receta
     private void eliminarRecetaConfirmada() {
-        if(recetaEliminar != null) {
-            db.eliminarReceta(recetaEliminar.id);
-            ListaRecetasFragment lista = (ListaRecetasFragment)
-                    getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+        if(recetaEliminar == null) return;
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        Data input = new Data.Builder()
+                .putString("accion", "eliminar")
+                .putInt("id", recetaEliminar.id)
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
 
-            if(lista != null) {
-                lista.refreshLista();
-            }
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                        .setInputData(input)
+                        .build();
 
-            lanzarNotificacionEliminada(recetaEliminar.titulo);
-            Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
-            recetaEliminar = null;
-        }
+        WorkManager.getInstance(this).enqueue(request);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(this, workInfo -> {
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        cargarRecetasServidor();
+                        lanzarNotificacionEliminada(recetaEliminar.titulo);
+
+                        Toast.makeText(this, getString(R.string.receta_eliminada),
+                                Toast.LENGTH_SHORT).show();
+
+                        recetaEliminar = null;
+                    }
+                });
     }
 
     @Override
@@ -469,7 +511,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     // Eliminación de receta desde fragment de detalle
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
-        db.eliminarReceta(receta.id);
 
         ListaRecetasFragment lista = (ListaRecetasFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);

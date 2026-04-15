@@ -9,10 +9,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 public class DetalleRecetaActivity extends AppCompatActivity implements DetalleRecetaFragment.Listener{
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
+        GestorIdioma.aplicarIdioma(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_receta);
         // color de elementos de la barra superior e inferior del dispositivo
@@ -40,9 +45,20 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
     // Cuando desde el fragment se pulsa eliminar receta
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
-        DBHelper db = new DBHelper(this);
-        // elimina la receta de la db con su id
-        db.eliminarReceta(receta.id);
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        Data input = new Data.Builder()
+                .putString("accion", "eliminar")
+                .putInt("id", receta.id)
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
+
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                        .setInputData(input)
+                        .build();
+
+        WorkManager.getInstance(this).enqueue(request);
+
         // lanza una notificación de que se ha eliminado
         lanzarNotificacionEliminada(receta.titulo);
         // pequeño mensaje en pantalla
