@@ -44,7 +44,6 @@ import androidx.work.WorkManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -206,6 +205,24 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
                         // guardar en db con id
                         long id = db.agregarReceta(r);
+
+                        Data input = new Data.Builder()
+                                .putString("accion", "insertar")
+                                .putString("titulo", r.titulo)
+                                .putString("categoria", r.categoria)
+                                .putInt("tiempo", r.tiempo)
+                                .putString("ingredientes", r.ingredientes)
+                                .putString("pasos", r.pasos)
+                                .putString("fotoUri", r.fotoUri)
+                                .build();
+
+                        OneTimeWorkRequest request =
+                                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                                        .setInputData(input)
+                                        .build();
+
+                        WorkManager.getInstance(this).enqueue(request);
+
                         r.id = (int) id;
 
                         // actualizar la lista de recetas si está el fragmento
