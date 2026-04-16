@@ -60,5 +60,9 @@
     <string name="receta_nueva">Nueva receta</string>
     <string name="detalle_receta">Detalle receta</string>
     <string name="cambios">Cambios guardados</string>
+    <string name="btn_cambiar_foto">Cambiar foto</string>
+    <string name="galeria">Galería</string>
+    <string name="camara">Cámara</string>
+    <string name="seleccionar_opcion">Selecciona una opción</string>
 
 </resources>

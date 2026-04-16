@@ -65,5 +65,9 @@
     <string name="receta_nueva">Errezeta berria</string>
     <string name="detalle_receta">Errezeta xehetasunak</string>
     <string name="cambios">Aldaketak gorde dira</string>
+    <string name="btn_cambiar_foto">Irudia aldatu</string>
+    <string name="galeria">Galeria</string>
+    <string name="camara">Kamera</string>
+    <string name="seleccionar_opcion">Aukera ezazu</string>
 
 </resources>

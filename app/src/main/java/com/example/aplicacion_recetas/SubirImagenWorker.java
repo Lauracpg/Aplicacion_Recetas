@@ -65,9 +65,17 @@ public class SubirImagenWorker extends Worker {
                 builder.appendQueryParameter("email", email);
 
             } else if("receta".equals(tipo)) {
-                int id = getInputData().getInt("id", 0);
+                String imagenId = getInputData().getString("imagenId");
+                Integer idReceta = getInputData().getInt("idReceta", 0);
                 int idUsuario = getInputData().getInt("idUsuario", 0);
-                builder.appendQueryParameter("id", String.valueOf(id));
+
+                if (imagenId != null) {
+                    builder.appendQueryParameter("imagenId", imagenId);
+                }
+
+                if (idReceta > 0) {
+                    builder.appendQueryParameter("id", String.valueOf(idReceta));
+                }
                 builder.appendQueryParameter("idUsuario", String.valueOf(idUsuario));
             }
 
@@ -92,6 +100,7 @@ public class SubirImagenWorker extends Worker {
             reader.close();
 
             JSONObject json = new JSONObject(response.toString());
+
             if(json.optBoolean("success")) {
                 String ruta = json.optString("ruta", null);
                 if("perfil".equals(tipo) && ruta != null) {
@@ -103,6 +112,7 @@ public class SubirImagenWorker extends Worker {
                                 .build()
                 );
             }
+
             return Result.failure();
 
         } catch (Exception e) {

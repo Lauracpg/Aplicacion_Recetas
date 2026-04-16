@@ -1,13 +1,16 @@
 package com.example.aplicacion_recetas;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +19,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
@@ -34,12 +40,16 @@ public class DetalleRecetaFragment extends Fragment {
     private TextView textViewTitulo, textViewCategoria, textViewTiempo, textViewIngredientes, textViewPasos;
     private ImageView imageViewFoto;
     private ImageView imageFavDetalle;
+    private Button btnAgregarFoto;
     private Receta recetaActual;
     private static final int REQUEST_GALERIA = 200;
     private Listener listener;
 
     private Uri imagenSeleccionada = null;
     private boolean imgChanged = false;
+    private Uri fotoCamaraUri;
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
     public interface Listener { // interfaz para fragment -> activity
         void onEliminarDesdeDetalle(Receta receta);
@@ -91,8 +101,8 @@ public class DetalleRecetaFragment extends Fragment {
         });
 
         // añadir o cambiar foto
-        Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
-        btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
+        btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
+        btnAgregarFoto.setOnClickListener(v -> mostrarOpcionesFoto());
 
         Button btnGuardar = view.findViewById(R.id.btnGuardarCambios);
         btnGuardar.setOnClickListener(v -> guardarCambios());
@@ -136,7 +146,86 @@ public class DetalleRecetaFragment extends Fragment {
                         });
             }
         });
+
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() != Activity.RESULT_OK) return;
+
+                    Intent data = result.getData();
+                    if (data == null) return;
+
+                    Bundle extras = data.getExtras();
+                    if (extras == null) return;
+
+                    Bitmap bitmap = (Bitmap) extras.get("data");
+                    if (bitmap == null) return;
+
+                    imageViewFoto.setImageBitmap(bitmap);
+                    imageViewFoto.setVisibility(View.VISIBLE);
+
+                    try {
+                        File file = new File(
+                                requireContext().getCacheDir(),
+                                "receta_" + System.currentTimeMillis() + ".jpg"
+                        );
+
+                        FileOutputStream fos = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                        fos.close();
+
+                        fotoCamaraUri = Uri.fromFile(file);
+                        imagenSeleccionada = fotoCamaraUri;
+                        recetaActual.fotoUri = fotoCamaraUri.toString();
+                        imgChanged = true;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+
+        requestCameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        abrirCamara();
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "Permiso de cámara denegado",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
         return view;
+    }
+
+    private void mostrarOpcionesFoto() {
+        String[] opciones = {
+                getString(R.string.galeria),
+                getString(R.string.camara)
+        };
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.seleccionar_opcion))
+                .setItems(opciones, (dialog, which) -> {
+                    if (which == 0) {
+                        abrirGaleria();
+                    } else {
+                        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED) {
+                            abrirCamara();
+                        } else {
+                            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        }
+                    }
+                }).show();
+    }
+
+    private void abrirCamara() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(intent);
     }
 
     private void guardarCambios() {
@@ -159,9 +248,9 @@ public class DetalleRecetaFragment extends Fragment {
 
                 Data input = new Data.Builder()
                         .putString("tipo", "receta")
-                        .putInt("id", recetaActual.id)
-                        .putInt("idUsuario", sesion.getUserId())
                         .putString("ruta_local", file.getAbsolutePath())
+                        .putInt("idReceta", recetaActual.id)
+                        .putInt("idUsuario", sesion.getUserId())
                         .build();
 
                 OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
@@ -285,8 +374,10 @@ public class DetalleRecetaFragment extends Fragment {
         if (receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
             imageViewFoto.setVisibility(View.VISIBLE);
             cargarImagenServidor(receta.fotoUri);
+            btnAgregarFoto.setText(getString(R.string.btn_cambiar_foto));
         } else {
             imageViewFoto.setVisibility(View.GONE);
+            btnAgregarFoto.setText(getString(R.string.btn_agregar_foto));
         }
     }
 }

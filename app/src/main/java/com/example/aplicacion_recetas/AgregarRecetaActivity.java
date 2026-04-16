@@ -1,9 +1,14 @@
 package com.example.aplicacion_recetas;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -14,9 +19,13 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
@@ -31,24 +40,20 @@ public class AgregarRecetaActivity extends AppCompatActivity {
     Spinner spinnerCategoria;
     ImageView imageViewFoto;
     Button btnAgregarFoto, btnGuardar;
-
     // código de solicitud para seleccionar imágenes desde galería
     private static final int REQUEST_GALERIA = 100;
     // URI imagen seleccionada
-    private String fotoUri = null;
+    private Uri fotoTemporalUri = null;
+    private String imagenId;
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_receta);
-        // color de elementos de la barra superior e inferior del dispositivo
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
-                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            );
-        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -57,6 +62,14 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle(R.string.receta_nueva);
+        }
+
+        // color de elementos de la barra superior e inferior del dispositivo
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
         }
 
         editTextTitulo = findViewById(R.id.editTextTitulo);
@@ -118,11 +131,91 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             }
         });
 
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() != RESULT_OK) return;
+
+                    Intent data = result.getData();
+                    if (data == null) return;
+
+                    Bundle extras = data.getExtras();
+                    if (extras == null) return;
+
+                    Bitmap bitmap = (Bitmap) extras.get("data");
+                    if (bitmap == null) return;
+
+                    imageViewFoto.setImageBitmap(bitmap);
+                    imageViewFoto.setVisibility(View.VISIBLE);
+
+                    try {
+                        File file = new File(getCacheDir(),
+                                "receta_" + System.currentTimeMillis() + ".jpg");
+
+                        FileOutputStream fos = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+                        fos.close();
+
+                        fotoTemporalUri = Uri.fromFile(file);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+
+        requestCameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        abrirCamara();
+                    } else {
+                        Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
         // abre la galería del dispositivo para elegir una imagen
-        btnAgregarFoto.setOnClickListener( v-> abrirGaleria());
+        btnAgregarFoto.setOnClickListener( v-> mostrarOpcionesFoto());
 
         // validar los datos y devolveros a la actividad que le llama
         btnGuardar.setOnClickListener(v -> guardarReceta());
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if (fotoTemporalUri != null) {
+            outState.putString("fotoUri", fotoTemporalUri.toString());
+        }
+    }
+
+    private void mostrarOpcionesFoto() {
+        String[] opciones = {
+                getString(R.string.galeria),
+                getString(R.string.camara)
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.seleccionar_opcion))
+                .setItems(opciones, (dialog, which) -> {
+                    if(which == 0) {
+                        abrirGaleria();
+                    } else {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                                == PackageManager.PERMISSION_GRANTED) {
+                            abrirCamara();
+                        } else {
+                            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        }
+                    }
+                }).show();
+    }
+
+    private void abrirCamara() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(intent);
     }
 
     @Override
@@ -138,6 +231,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         String tiempoString = editTextTiempo.getText().toString().trim();
         String ingredientes = editTextIngredientes.getText().toString().trim();
         String pasos = editTextPasos.getText().toString().trim();
+        imagenId = "receta_" + System.currentTimeMillis();
 
         boolean valido = true;
         // campos obligatorios
@@ -201,29 +295,28 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         data.putExtra("ingredientes", ingredientes);
         data.putExtra("pasos", pasos);
 
-        if (fotoUri != null && !fotoUri.isEmpty()) {
-            subirImagenGuardar(data);
+        if (fotoTemporalUri != null) {
+            subirImagen(data);
         } else {
-            data.putExtra("fotoUri", "");
+            data.putExtra("fotoUri", ""); // sin imagen
             setResult(RESULT_OK, data);
             finish();
         }
     }
 
-    private void subirImagenGuardar(Intent data) {
+    private void subirImagen(Intent data) {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
 
-        File file = new File(getCacheDir(), "receta_temp.jpg");
-
-        try (InputStream is = getContentResolver().openInputStream(Uri.parse(fotoUri));
+        File file = new File(getCacheDir(), "upload.jpg");
+        try (InputStream is = getContentResolver().openInputStream(fotoTemporalUri);
              FileOutputStream fos = new FileOutputStream(file)) {
 
             byte[] buffer = new byte[1024];
             int len;
+
             while ((len = is.read(buffer)) > 0) {
                 fos.write(buffer, 0, len);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -232,6 +325,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 .putString("tipo", "receta")
                 .putString("ruta_local", file.getAbsolutePath())
                 .putInt("idUsuario", sesion.getUserId())
+                .putString("imagenId", imagenId)
                 .build();
 
         OneTimeWorkRequest request =
@@ -244,11 +338,8 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         WorkManager.getInstance(this)
                 .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
-
                     if (workInfo == null) return;
-
                     if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-
                         String rutaServidor =
                                 workInfo.getOutputData().getString("ruta");
 
@@ -278,7 +369,8 @@ public class AgregarRecetaActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == REQUEST_GALERIA && resultCode == RESULT_OK && data != null) {
+        if (resultCode != RESULT_OK) return;
+        if(requestCode == REQUEST_GALERIA  && data != null) {
             Uri img = data.getData();
             if(img != null) {
                 // solicita permiso persistente para poder acceder la imagen
@@ -289,7 +381,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 imageViewFoto.setImageURI(img);
                 imageViewFoto.setVisibility(View.VISIBLE);
                 // guarda la URI para enviarla más tarde
-                fotoUri = img.toString();
+                fotoTemporalUri = img;
             }
         }
     }
