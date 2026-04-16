@@ -105,6 +105,14 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         });
     }
 
+    @Override
+    public void onFavoritoCambiado(Receta recetaActual) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("reload", true);
+
+        setResult(RESULT_OK, resultIntent);
+    }
+
     // Crea un notificación indicando que se ha eliminado una receta
     private void lanzarNotificacionEliminada(String titulo) {
         String canalId = "canal_recetas";

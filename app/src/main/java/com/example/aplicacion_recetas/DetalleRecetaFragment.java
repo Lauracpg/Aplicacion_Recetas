@@ -53,6 +53,8 @@ public class DetalleRecetaFragment extends Fragment {
 
     public interface Listener { // interfaz para fragment -> activity
         void onEliminarDesdeDetalle(Receta receta);
+
+        void onFavoritoCambiado(Receta recetaActual);
     }
 
     @Override
@@ -122,7 +124,7 @@ public class DetalleRecetaFragment extends Fragment {
                         .putString("accion", "favorito")
                         .putInt("id", recetaActual.id)
                         .putInt("idUsuario", sesion.getUserId())
-                        .putInt("favorita", recetaActual.favorita ? 1 : 0)
+                        .putInt("favorita", nuevoEstado ? 1 : 0)
                         .build();
 
                 OneTimeWorkRequest request =
@@ -142,6 +144,9 @@ public class DetalleRecetaFragment extends Fragment {
                                                 ? android.R.drawable.btn_star_big_on
                                                 : android.R.drawable.btn_star_big_off
                                 );
+                                if (listener != null) {
+                                    listener.onFavoritoCambiado(recetaActual);
+                                }
                             }
                         });
             }

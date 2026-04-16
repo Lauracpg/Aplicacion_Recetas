@@ -220,7 +220,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                     }
                 }
         );
-
         // inicializar db y botón de '+' (agregar receta)
         btnAgregar = findViewById(R.id.btnAgregarReceta);
         btnAgregar.setOnClickListener(v -> {
@@ -542,6 +541,11 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         finish();
                     }
                 });
+    }
+
+    @Override
+    public void onFavoritoCambiado(Receta recetaActual) {
+        cargarRecetasServidor();
     }
 
     // Notificación de receta eliminada
