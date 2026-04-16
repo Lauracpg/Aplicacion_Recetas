@@ -242,6 +242,11 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cargarRecetasServidor();
+    }
     private void subirFotoPerfil(Bitmap bitmap) {
         try {
             File file = new File(getCacheDir(), "foto.jpg");
@@ -510,19 +515,33 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
 
-        ListaRecetasFragment lista = (ListaRecetasFragment)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
-        if(lista != null) {
-            lista.refreshLista();
-        }
+        if(receta == null) return;
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        Data input = new Data.Builder()
+                .putString("accion", "eliminar")
+                .putInt("id", receta.id)
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
 
-        lanzarNotificacionEliminada(receta.titulo);
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                .setInputData(input)
+                .build();
 
-        Toast.makeText(this, getString(R.string.receta_eliminada), Toast.LENGTH_SHORT).show();
-        // Si no está en landscape, cerrar la actividad detalle
-        if(getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            finish();
-        }
+        WorkManager.getInstance(this).enqueue(request);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(this, workInfo -> {
+                    cargarRecetasServidor();
+                    lanzarNotificacionEliminada(receta.titulo);
+                    Toast.makeText(this, getString(R.string.receta_eliminada),
+                            Toast.LENGTH_SHORT).show();
+                    if(getResources().getConfiguration().orientation
+                    != Configuration.ORIENTATION_LANDSCAPE) {
+                        finish();
+                    }
+                });
     }
 
     // Notificación de receta eliminada

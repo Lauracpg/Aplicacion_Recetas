@@ -64,5 +64,6 @@
     <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
     <string name="receta_nueva">Errezeta berria</string>
     <string name="detalle_receta">Errezeta xehetasunak</string>
+    <string name="cambios">Aldaketak gorde dira</string>
 
 </resources>

@@ -12,10 +12,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public class AgregarRecetaActivity extends AppCompatActivity {
     EditText editTextTitulo, editTextTiempo, editTextIngredientes, editTextPasos;
@@ -170,7 +179,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 int punto = line.indexOf(". ");
                 if(punto + 2 < line.length()){
                     line = line.substring(0, punto + 2) +
-                            line.substring(punto + 2, punto + 3).toUpperCase() +
+                            Character.toUpperCase(line.charAt(punto + 2)) +
                             line.substring(punto + 3);
                 }
             }
@@ -191,11 +200,69 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         data.putExtra("tiempo", tiempo);
         data.putExtra("ingredientes", ingredientes);
         data.putExtra("pasos", pasos);
-        data.putExtra("fotoUri", fotoUri);
 
-        // se envía el resultado y se cierra la actividad
-        setResult(RESULT_OK, data);
-        finish();
+        if (fotoUri != null && !fotoUri.isEmpty()) {
+            subirImagenGuardar(data);
+        } else {
+            data.putExtra("fotoUri", "");
+            setResult(RESULT_OK, data);
+            finish();
+        }
+    }
+
+    private void subirImagenGuardar(Intent data) {
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+
+        File file = new File(getCacheDir(), "receta_temp.jpg");
+
+        try (InputStream is = getContentResolver().openInputStream(Uri.parse(fotoUri));
+             FileOutputStream fos = new FileOutputStream(file)) {
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = is.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Data input = new Data.Builder()
+                .putString("tipo", "receta")
+                .putString("ruta_local", file.getAbsolutePath())
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
+
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
+                        .setInputData(input)
+                        .build();
+
+        WorkManager.getInstance(this).enqueue(request);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(this, workInfo -> {
+
+                    if (workInfo == null) return;
+
+                    if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+
+                        String rutaServidor =
+                                workInfo.getOutputData().getString("ruta");
+
+                        data.putExtra("fotoUri", rutaServidor);
+                        setResult(RESULT_OK, data);
+                        finish();
+                    }
+
+                    if (workInfo.getState() == WorkInfo.State.FAILED) {
+                        Toast.makeText(this,
+                                "Error subiendo imagen",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // Abre el selector de documentos del sistema para elegir una imagen

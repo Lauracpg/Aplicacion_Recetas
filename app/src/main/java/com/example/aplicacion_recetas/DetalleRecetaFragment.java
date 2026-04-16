@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,17 +14,21 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class DetalleRecetaFragment extends Fragment {
     private TextView textViewTitulo, textViewCategoria, textViewTiempo, textViewIngredientes, textViewPasos;
@@ -31,6 +37,9 @@ public class DetalleRecetaFragment extends Fragment {
     private Receta recetaActual;
     private static final int REQUEST_GALERIA = 200;
     private Listener listener;
+
+    private Uri imagenSeleccionada = null;
+    private boolean imgChanged = false;
 
     public interface Listener { // interfaz para fragment -> activity
         void onEliminarDesdeDetalle(Receta receta);
@@ -47,7 +56,9 @@ public class DetalleRecetaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        if (recetaActual != null) {
+            mostrarReceta(recetaActual);
+        }
     }
 
     @Nullable
@@ -82,6 +93,9 @@ public class DetalleRecetaFragment extends Fragment {
         // añadir o cambiar foto
         Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
         btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
+
+        Button btnGuardar = view.findViewById(R.id.btnGuardarCambios);
+        btnGuardar.setOnClickListener(v -> guardarCambios());
 
         Fragment listaFragment = requireActivity()
                         .getSupportFragmentManager()
@@ -125,6 +139,91 @@ public class DetalleRecetaFragment extends Fragment {
         return view;
     }
 
+    private void guardarCambios() {
+        if (recetaActual == null) return;
+
+        GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
+
+        if(imagenSeleccionada != null && imgChanged) {
+            try {
+                InputStream is = requireContext().getContentResolver().openInputStream(imagenSeleccionada);
+                File file = new File(requireContext().getCacheDir(), "receta_" + recetaActual.id + ".jpg");
+                FileOutputStream fos = new FileOutputStream(file);
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = is.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+                fos.close();
+                is.close();
+
+                Data input = new Data.Builder()
+                        .putString("tipo", "receta")
+                        .putInt("id", recetaActual.id)
+                        .putInt("idUsuario", sesion.getUserId())
+                        .putString("ruta_local", file.getAbsolutePath())
+                        .build();
+
+                OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
+                        .setInputData(input)
+                        .build();
+
+                WorkManager.getInstance(requireContext()).enqueue(request);
+
+                WorkManager.getInstance(requireContext())
+                        .getWorkInfoByIdLiveData(request.getId())
+                        .observe(getViewLifecycleOwner(), workInfo -> {
+
+                            if (workInfo == null) return;
+
+                            if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+
+                                String nuevaRuta = workInfo.getOutputData().getString("ruta");
+
+                                if (nuevaRuta != null) {
+                                    recetaActual.fotoUri = nuevaRuta;
+                                    cargarImagenServidor(nuevaRuta);
+                                }
+
+                                imgChanged = false;
+                                imagenSeleccionada = null;
+
+                                Toast.makeText(requireContext(),
+                                        getString(R.string.cambios),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            if (workInfo.getState() == WorkInfo.State.FAILED) {
+                                Toast.makeText(requireContext(),
+                                        "Error al guardar cambios",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void cargarImagenServidor(String ruta) {
+        String urlCompleta = "http://34.175.70.22:81/" + ruta;
+        new Thread(() -> {
+            try {
+                URL url = new URL(urlCompleta);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                InputStream is = conn.getInputStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(is);
+
+                requireActivity().runOnUiThread(() -> {
+                    imageViewFoto.setVisibility(View.VISIBLE);
+                    imageViewFoto.setImageBitmap(bitmap);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     // Abre la galería para seleccionar una imagen
     private void abrirGaleria() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -149,37 +248,10 @@ public class DetalleRecetaFragment extends Fragment {
                 // mostrar imagen
                 imageViewFoto.setImageURI(imgSelected);
                 imageViewFoto.setVisibility(View.VISIBLE);
+
+                imagenSeleccionada = imgSelected;
                 recetaActual.fotoUri = imgSelected.toString();
-
-                try {
-                    InputStream is = requireContext().getContentResolver().openInputStream(imgSelected);
-                    File file = new File(requireContext().getCacheDir(), "receta_" + recetaActual.id + ".jpg");
-                    FileOutputStream fos = new FileOutputStream(file);
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = is.read(buffer)) > 0) {
-                        fos.write(buffer, 0, length);
-                    }
-                    fos.close();
-                    is.close();
-
-                    GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
-                    Data input = new Data.Builder()
-                            .putString("tipo", "receta")
-                            .putInt("id", recetaActual.id)
-                            .putInt("idUsuario", sesion.getUserId())
-                            .putString("ruta_local", file.getAbsolutePath())
-                            .build();
-
-                    OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
-                            .setInputData(input)
-                            .build();
-
-                    WorkManager.getInstance(requireContext()).enqueue(request);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                imgChanged = true;
             }
         }
     }
@@ -210,13 +282,11 @@ public class DetalleRecetaFragment extends Fragment {
         }
 
         // mostrar foto si tiene
-        if (imageViewFoto != null) {
-            if (receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
-                imageViewFoto.setVisibility(View.VISIBLE);
-                imageViewFoto.setImageURI(Uri.parse(receta.fotoUri));
-            } else {
-                imageViewFoto.setVisibility(View.GONE);
-            }
+        if (receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
+            imageViewFoto.setVisibility(View.VISIBLE);
+            cargarImagenServidor(receta.fotoUri);
+        } else {
+            imageViewFoto.setVisibility(View.GONE);
         }
     }
 }

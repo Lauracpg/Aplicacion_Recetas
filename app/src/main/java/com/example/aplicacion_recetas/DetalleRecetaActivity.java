@@ -2,11 +2,13 @@ package com.example.aplicacion_recetas;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
@@ -15,6 +17,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 public class DetalleRecetaActivity extends AppCompatActivity implements DetalleRecetaFragment.Listener{
+    private Receta receta;
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
@@ -41,16 +44,24 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
 
         // coge la receta enviada desde la actividad anterior
-        Receta receta = (Receta) getIntent().getSerializableExtra("receta");
+        if(savedInstanceState != null) {
+            receta = (Receta) savedInstanceState.getSerializable("receta");
+        } else {
+            receta = (Receta) getIntent().getSerializableExtra("receta");
+        }
+
         // obtiene el fragment de detalle de la receta
         DetalleRecetaFragment fragment = (DetalleRecetaFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
         // si existe y se ha recibido, muestra los datos
-        if (fragment != null && receta != null && savedInstanceState == null) {
-            fragment.setReceta(receta);
-        }
+        fragment.setReceta(receta);
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("receta", receta);
+    }
     @Override
     public boolean onSupportNavigateUp() {
         finish();
@@ -74,15 +85,24 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
 
         WorkManager.getInstance(this).enqueue(request);
 
-        // lanza una notificación de que se ha eliminado
-        lanzarNotificacionEliminada(receta.titulo);
-        // pequeño mensaje en pantalla
-        Toast.makeText(this,
-                getString(R.string.receta_eliminada),
-                Toast.LENGTH_SHORT).show();
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(this, workInfo -> {
+                            if (workInfo != null && workInfo.getState().isFinished()) {
+                                // lanza una notificación de que se ha eliminado
+                                lanzarNotificacionEliminada(receta.titulo);
+                                // pequeño mensaje en pantalla
+                                Toast.makeText(this,
+                                        getString(R.string.receta_eliminada),
+                                        Toast.LENGTH_SHORT).show();
 
-        // cierra la pantalla actual y vuelve atrás
-        finish();
+                                Intent resultIntent = new Intent();
+                                resultIntent.putExtra("recetaEliminada", true);
+                                setResult(RESULT_OK, resultIntent);
+                                // cierra la pantalla actual y vuelve atrás
+                                finish();
+                            }
+                        });
     }
 
     // Crea un notificación indicando que se ha eliminado una receta

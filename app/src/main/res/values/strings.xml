@@ -59,4 +59,6 @@
     <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
     <string name="receta_nueva">Nueva receta</string>
     <string name="detalle_receta">Detalle receta</string>
+    <string name="cambios">Cambios guardados</string>
+
 </resources>
