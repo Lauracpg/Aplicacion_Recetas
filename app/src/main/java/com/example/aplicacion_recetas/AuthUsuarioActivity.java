@@ -1,8 +1,6 @@
 package com.example.aplicacion_recetas;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -23,18 +21,13 @@ import androidx.work.WorkManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Locale;
-
 public class AuthUsuarioActivity extends AppCompatActivity {
     EditText editTextNombre, editTextEmail, editTextPassword;
     Button btnRegistrar, btnLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String lang = prefs.getString("lang", "es");
-        aplicarLocale(lang);
-
+        GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth_usuario);
 
@@ -73,35 +66,17 @@ public class AuthUsuarioActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_es) {
-            setLocale("es");
+            GestorIdioma.setIdioma(this, "es");
+            recreate();
             return true;
         }
-
         if (item.getItemId() == R.id.menu_eu) {
-            setLocale("eu");
+            GestorIdioma.setIdioma(this, "eu");
+            recreate();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void aplicarLocale(String lang) {
-        Locale locale = new Locale(lang);
-        Locale.setDefault(locale);
-
-        Configuration config = new Configuration(getResources().getConfiguration());
-        config.setLocale(locale);
-
-        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-    }
-    private void setLocale(String lang) {
-        guardarIdioma(lang);
-        aplicarLocale(lang);
-        recreate();
-    }
-
-    private void guardarIdioma(String lang) {
-        getSharedPreferences("settings", MODE_PRIVATE).edit().putString("lang", lang).apply();
     }
 
     private void registrarUsuario() {

@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/activity_detalle_receta"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/light_purple"
+        android:title="@string/detalle_receta"
+        android:titleTextColor="@android:color/white"/>
 
     <fragment
         android:id="@+id/fragment_detalle_receta"
         android:name="com.example.aplicacion_recetas.DetalleRecetaFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-</FrameLayout>
+</LinearLayout>

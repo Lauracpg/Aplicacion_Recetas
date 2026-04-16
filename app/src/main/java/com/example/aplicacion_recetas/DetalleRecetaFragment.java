@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,6 +31,7 @@ public class DetalleRecetaFragment extends Fragment {
     private Receta recetaActual;
     private static final int REQUEST_GALERIA = 200;
     private Listener listener;
+
     public interface Listener { // interfaz para fragment -> activity
         void onEliminarDesdeDetalle(Receta receta);
     }
@@ -44,20 +44,17 @@ public class DetalleRecetaFragment extends Fragment {
             listener = (Listener) context;
         }
     }
-
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // coge la receta enviada en el bundle
-        if(getArguments() != null) {
-            recetaActual = (Receta) getArguments().getSerializable("receta");
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_detalle_receta, container, false);
 
         textViewTitulo = view.findViewById(R.id.textViewTitulo);
@@ -86,19 +83,9 @@ public class DetalleRecetaFragment extends Fragment {
         Button btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
         btnAgregarFoto.setOnClickListener(v -> abrirGaleria());
 
-        ImageButton btnVolver = view.findViewById(R.id.btnVolverInicio);
-
         Fragment listaFragment = requireActivity()
                         .getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_lista_recetas);
-
-        // si está en landscape oculta el botón de volver
-        if(listaFragment != null) {
-            btnVolver.setVisibility(View.GONE);
-        } else {
-            btnVolver.setVisibility(View.VISIBLE);
-            btnVolver.setOnClickListener(v -> requireActivity().finish());
-        }
 
         imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
         imageFavDetalle.setOnClickListener(v -> {
@@ -197,9 +184,15 @@ public class DetalleRecetaFragment extends Fragment {
         }
     }
 
+    public void setReceta(Receta receta) {
+        this.recetaActual = receta;
+        mostrarReceta(receta);
+    }
+
     // Cargar receta en la interfaz
     public void mostrarReceta(Receta receta) {
-        if (receta == null) return;
+        if (receta == null || getView() == null) return;
+
         recetaActual = receta;
         textViewTitulo.setText(receta.titulo);
         textViewCategoria.setText(receta.categoria);
@@ -207,19 +200,23 @@ public class DetalleRecetaFragment extends Fragment {
         textViewIngredientes.setText(receta.ingredientes);
         textViewPasos.setText(receta.pasos);
 
-        // mostrar foto si tiene
-        if(receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
-            imageViewFoto.setVisibility(View.VISIBLE);
-            imageViewFoto.setImageURI(Uri.parse(receta.fotoUri));
-        } else {
-            imageViewFoto.setImageResource(android.R.color.transparent);
+        // icono favorito
+        if (imageFavDetalle != null) {
+            imageFavDetalle.setImageResource(
+                    receta.favorita
+                            ? android.R.drawable.btn_star_big_on
+                            : android.R.drawable.btn_star_big_off
+            );
         }
 
-        // icono favorito
-        imageFavDetalle.setImageResource(
-                receta.favorita
-                        ? android.R.drawable.btn_star_big_on
-                        : android.R.drawable.btn_star_big_off
-        );
+        // mostrar foto si tiene
+        if (imageViewFoto != null) {
+            if (receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
+                imageViewFoto.setVisibility(View.VISIBLE);
+                imageViewFoto.setImageURI(Uri.parse(receta.fotoUri));
+            } else {
+                imageViewFoto.setVisibility(View.GONE);
+            }
+        }
     }
 }

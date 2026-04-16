@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
@@ -17,7 +18,6 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_receta);
         // color de elementos de la barra superior e inferior del dispositivo
@@ -28,20 +28,35 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
             );
         }
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.detalle_receta);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+
         // coge la receta enviada desde la actividad anterior
         Receta receta = (Receta) getIntent().getSerializableExtra("receta");
         // obtiene el fragment de detalle de la receta
         DetalleRecetaFragment fragment = (DetalleRecetaFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
         // si existe y se ha recibido, muestra los datos
-        if(fragment != null && receta != null) {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("receta", receta);
-            fragment.setArguments(bundle);
-            // llama al métood del fragment para cargar la info
-            fragment.mostrarReceta(receta);
+        if (fragment != null && receta != null && savedInstanceState == null) {
+            fragment.setReceta(receta);
         }
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
     // Cuando desde el fragment se pulsa eliminar receta
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {

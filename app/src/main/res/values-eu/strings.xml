@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Errezeta Aplikazioa</string>
+
     <string name="hint_titulo">Izenburua</string>
     <string name="hint_categoria">Kategoria</string>
     <string-array name="categorias">
@@ -12,13 +13,17 @@
     <string name="hint_tiempo">Denbora (min)</string>
     <string name="hint_ingredientes">Osagaiak</string>
     <string name="hint_pasos">Urratsak</string>
+
     <string name="btn_guardar">Gorde</string>
+
     <string name="error_titulo">Idatzi izenburua errezetarako</string>
     <string name="error_tiempo">Idatzi denbora</string>
     <string name="error_ingredientes">Idatzi osagaiak</string>
     <string name="error_pasos">Idatzi urratsak</string>
+
     <string name="categoria">Kategoria</string>
     <string name="tiempo">Denbora</string>
+
     <string name="minutos">min</string>
     <string name="btn_eliminar">Ezabatu</string>
     <string name="btn_agregar_receta">Errezeta gehitu</string>
@@ -57,5 +62,7 @@
     <string name="supermercados_cerca">Supermerkatuak</string>
     <string name="ubicacion">Zure kokapena</string>
     <string name="maps_api_key">AIzaSyCd1ECDiUeBTkZlxIgCozFuOS2-x6Y1RwI</string>
+    <string name="receta_nueva">Errezeta berria</string>
+    <string name="detalle_receta">Errezeta xehetasunak</string>
 
 </resources>

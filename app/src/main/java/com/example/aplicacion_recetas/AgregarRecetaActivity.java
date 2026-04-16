@@ -10,12 +10,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class AgregarRecetaActivity extends AppCompatActivity {
     EditText editTextTitulo, editTextTiempo, editTextIngredientes, editTextPasos;
@@ -30,6 +30,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_receta);
         // color de elementos de la barra superior e inferior del dispositivo
@@ -38,6 +39,15 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                     View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
                     View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             );
+        }
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle(R.string.receta_nueva);
         }
 
         editTextTitulo = findViewById(R.id.editTextTitulo);
@@ -104,9 +114,12 @@ public class AgregarRecetaActivity extends AppCompatActivity {
 
         // validar los datos y devolveros a la actividad que le llama
         btnGuardar.setOnClickListener(v -> guardarReceta());
-        // botón para volver a la pantalla anterior sin guardar
-        ImageButton btnVolver = findViewById(R.id.btnVolverInicio);
-        btnVolver.setOnClickListener(v -> finish());
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 
     // Recoge los datos introducidos, valida campos, formatea información

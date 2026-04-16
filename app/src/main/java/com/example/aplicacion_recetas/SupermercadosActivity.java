@@ -5,8 +5,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -49,7 +47,6 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_supermercados);
 
@@ -80,27 +77,6 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
     public boolean onSupportNavigateUp() {
         finish();
         return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_idioma, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if(id == R.id.menu_es) {
-            GestorIdioma.setIdioma(this, "es");
-            recreate();
-            return true;
-        } else if(id == R.id.menu_eu) {
-            GestorIdioma.setIdioma(this, "eu");
-            recreate();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

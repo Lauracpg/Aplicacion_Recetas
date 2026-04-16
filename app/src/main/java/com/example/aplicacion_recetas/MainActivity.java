@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     FloatingActionButton btnAgregar;
 
     private ActivityResultLauncher<Intent> startForResult;
-    private Receta ultimaRecetaAgregada;
     private Receta recetaEliminar;
 
     private ActivityResultLauncher<Intent> takePictureLauncher;
@@ -72,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 

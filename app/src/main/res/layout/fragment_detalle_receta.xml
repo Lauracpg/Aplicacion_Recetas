@@ -5,12 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:clipToPadding="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="24dp">
+        android:paddingTop="8dp">
 
         <TextView
             android:id="@+id/textViewTitulo"
@@ -41,7 +42,7 @@
 
         <TextView
             android:id="@+id/labelCategoria"
-            android:text="Categoría"
+            android:text="@string/categoria"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black"
@@ -66,7 +67,7 @@
 
         <TextView
             android:id="@+id/labelTiempo"
-            android:text="Tiempo"
+            android:text="@string/tiempo"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black"
@@ -91,7 +92,7 @@
 
         <TextView
             android:id="@+id/labelIngredientes"
-            android:text="Ingredientes"
+            android:text="@string/hint_ingredientes"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black"
@@ -116,7 +117,7 @@
 
         <TextView
             android:id="@+id/labelPasos"
-            android:text="Pasos"
+            android:text="@string/hint_pasos"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black"
@@ -174,18 +175,6 @@
             app:layout_constraintTop_toBottomOf="@id/imageViewFoto"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
-
-        <ImageButton
-            android:id="@+id/btnVolverInicio"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_revert"
-            android:contentDescription="@string/volver_inicio"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/btnEliminarDetalle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:tint="@color/black"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
