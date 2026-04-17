@@ -300,8 +300,21 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         } else {
             data.putExtra("fotoUri", ""); // sin imagen
             setResult(RESULT_OK, data);
+            actualizarWidgetDatos();
             finish();
         }
+    }
+
+    private void actualizarWidgetDatos() {
+        Data input = new Data.Builder()
+                .putString("accion", "obtener")
+                .build();
+
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                .setInputData(input)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(request);
     }
 
     private void subirImagen(Intent data) {
@@ -344,6 +357,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                                 workInfo.getOutputData().getString("ruta");
 
                         data.putExtra("fotoUri", rutaServidor);
+                        actualizarWidgetDatos();
                         setResult(RESULT_OK, data);
                         finish();
                     }

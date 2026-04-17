@@ -1,13 +1,21 @@
 package com.example.aplicacion_recetas;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,6 +36,7 @@ public class RecetasWorker extends Worker {
     public Result doWork() {
         try {
             String accion = getInputData().getString("accion");
+            Log.d("WORKER_DEBUG", "ACCION RECIBIDA = " + accion);
 
             URL url = new URL("http://34.175.70.22:81/recetas.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -97,9 +106,21 @@ public class RecetasWorker extends Worker {
             String json = response.toString();
             Log.d("RECETAS_API", json);
 
+            if ("obtener".equals(accion)) {
+                SharedPreferences prefs =
+                        getApplicationContext().getSharedPreferences("widget_data", Context.MODE_PRIVATE);
+
+                prefs.edit()
+                        .putString("recetas_json", json)
+                        .apply();
+
+                actualizarWidget(getApplicationContext());
+            }
+
             return Result.success(
                     new Data.Builder()
                             .putString("response", json)
+                            .putString("accion", accion)
                             .build()
             );
 
@@ -111,5 +132,18 @@ public class RecetasWorker extends Worker {
                             .build()
             );
         }
+    }
+
+    private void actualizarWidget(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        ComponentName widget = new ComponentName(context, WidgetReceta.class);
+
+        int[] ids = manager.getAppWidgetIds(widget);
+
+        Intent intent = new Intent(context, WidgetReceta.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+
+        context.sendBroadcast(intent);
     }
 }

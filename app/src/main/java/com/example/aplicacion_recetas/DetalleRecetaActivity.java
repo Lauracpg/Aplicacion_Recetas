@@ -16,6 +16,9 @@ import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class DetalleRecetaActivity extends AppCompatActivity implements DetalleRecetaFragment.Listener{
     private Receta receta;
     @Override
@@ -23,6 +26,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_receta);
+
         // color de elementos de la barra superior e inferior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(
@@ -43,18 +47,87 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         }
         getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
 
+        int recetaIdIntent = getIntent().getIntExtra("receta_id", -1);
+
         // coge la receta enviada desde la actividad anterior
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             receta = (Receta) savedInstanceState.getSerializable("receta");
-        } else {
-            receta = (Receta) getIntent().getSerializableExtra("receta");
+            mostrarEnFragment(receta);
+            return;
         }
 
+        if (recetaIdIntent != -1) {
+            cargarRecetaDesdeId(recetaIdIntent);
+        } else {
+            receta = (Receta) getIntent().getSerializableExtra("receta");
+
+            if (receta != null) {
+                mostrarEnFragment(receta);
+            }
+        }
+    }
+
+    private void mostrarEnFragment(Receta receta) {
         // obtiene el fragment de detalle de la receta
-        DetalleRecetaFragment fragment = (DetalleRecetaFragment)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
+        DetalleRecetaFragment fragment =
+                (DetalleRecetaFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_detalle_receta);
         // si existe y se ha recibido, muestra los datos
-        fragment.setReceta(receta);
+        if (fragment != null) {
+            fragment.setReceta(receta);
+        }
+    }
+
+    private void cargarRecetaDesdeId(int id) {
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        Data input = new Data.Builder()
+                .putString("accion", "obtener")
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
+
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                        .setInputData(input)
+                        .build();
+
+        WorkManager.getInstance(this).enqueue(request);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(request.getId())
+                .observe(this, workInfo -> {
+
+                    if (workInfo != null && workInfo.getState().isFinished()) {
+                        String json = workInfo.getOutputData().getString("response");
+
+                        try {
+                            JSONObject obj = new JSONObject(json);
+                            JSONArray recetas = obj.getJSONArray("recetas");
+
+                            for (int i = 0; i < recetas.length(); i++) {
+                                JSONObject r = recetas.getJSONObject(i);
+
+                                if (r.getInt("id") == id) {
+                                    Receta receta = new Receta();
+                                    receta.id = id;
+                                    receta.titulo = r.getString("titulo");
+                                    receta.categoria = r.getString("categoria");
+                                    receta.tiempo = r.getInt("tiempo");
+                                    receta.ingredientes = r.getString("ingredientes");
+                                    receta.pasos = r.getString("pasos");
+                                    receta.fotoUri = r.optString("fotoUri", null);
+                                    receta.favorita = r.optInt("favorita", 0) == 1;
+
+                                    this.receta = receta;
+                                    mostrarEnFragment(receta);
+                                    break;
+                                }
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
     }
 
     @Override
@@ -95,7 +168,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                                 Toast.makeText(this,
                                         getString(R.string.receta_eliminada),
                                         Toast.LENGTH_SHORT).show();
-
+                                refrescarWidget();
                                 Intent resultIntent = new Intent();
                                 resultIntent.putExtra("recetaEliminada", true);
                                 setResult(RESULT_OK, resultIntent);
@@ -105,11 +178,25 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         });
     }
 
+    private void refrescarWidget() {
+        GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+        Data input = new Data.Builder()
+                .putString("accion", "obtener")
+                .putInt("idUsuario", sesion.getUserId())
+                .build();
+
+        OneTimeWorkRequest request =
+                new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                        .setInputData(input)
+                        .build();
+
+        WorkManager.getInstance(this).enqueue(request);
+    }
+
     @Override
     public void onFavoritoCambiado(Receta recetaActual) {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("reload", true);
-
         setResult(RESULT_OK, resultIntent);
     }
 

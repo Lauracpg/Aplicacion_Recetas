@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/txtHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sugerencia para hoy"
+        android:textSize="11sp"
+        android:textColor="@color/dark_purple"
+        android:textStyle="bold"
+        android:alpha="0.8"/>
+
+    <TextView
+        android:id="@+id/txtTituloWidget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/dark_purple"
+        android:layout_marginTop="2dp"
+        android:maxLines="2"
+        android:ellipsize="end"/>
+
+    <TextView
+        android:id="@+id/txtReceta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:maxLines="1"/>
+
+    <TextView
+        android:id="@+id/txtTiempo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#888888"/>
+
+    <Button
+        android:id="@+id/btnActualizar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Otra receta"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/light_purple"
+        android:layout_marginTop="8dp"
+        android:textSize="12sp"
+        android:minHeight="36dp"/>
+
+</LinearLayout>
