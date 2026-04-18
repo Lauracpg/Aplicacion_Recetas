@@ -64,5 +64,13 @@
     <string name="galeria">Galería</string>
     <string name="camara">Cámara</string>
     <string name="seleccionar_opcion">Selecciona una opción</string>
+    <string name="anterior">Anterior</string>
+    <string name="siguiente">Siguiente</string>
+    <string name="modo_cocina">Modo cocina</string>
+    <string name="modo_cocina_activa">Modo cocina activa</string>
+    <string name="cocinando">Cocinando...</string>
+    <string name="salir_cocina">Salir modo cocina</string>
+    <string name="paso_actual">Paso actual</string>
+    <string name="paso_formato">Paso %1$d de %2$d</string>
 
 </resources>

@@ -69,5 +69,13 @@
     <string name="galeria">Galeria</string>
     <string name="camara">Kamera</string>
     <string name="seleccionar_opcion">Aukera ezazu</string>
+    <string name="anterior">Aurrekoa</string>
+    <string name="siguiente">Hurrengoa</string>
+    <string name="modo_cocina">Sukalde modua</string>
+    <string name="modo_cocina_activa">Sukalde modua aktibo</string>
+    <string name="salir_cocina">Sukalde modutik irten</string>
+    <string name="cocinando">Sukaldatzen...</string>
+    <string name="paso_actual">Uneko urratsa</string>
+    <string name="paso_formato">%1$d. urratsa %2$d-tik</string>
 
 </resources>

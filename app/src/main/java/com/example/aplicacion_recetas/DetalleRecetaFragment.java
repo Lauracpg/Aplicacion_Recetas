@@ -152,6 +152,16 @@ public class DetalleRecetaFragment extends Fragment {
             }
         });
 
+        Button btnModoCocina = view.findViewById(R.id.btnModoCocina);
+
+        btnModoCocina.setOnClickListener(v -> {
+            if (recetaActual == null) return;
+
+            Intent intent = new Intent(requireContext(), ModoCocinaActivity.class);
+            intent.putExtra("receta", recetaActual);
+            startActivity(intent);
+        });
+
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {

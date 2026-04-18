@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.work.Data;
@@ -38,39 +37,22 @@ public class WidgetReceta extends AppWidgetProvider{
                 context.getSharedPreferences("widget_data", Context.MODE_PRIVATE);
 
         String json = prefs.getString("recetas_json", null);
-        Log.d("WIDGET_DEBUG", "JSON COMPLETO: " + json);
-        Log.d("WIDGET_DEBUG", "1 - JSON desde SharedPreferences: " + json);
 
         int recetaId = -1;
 
         try {
-            if (json == null) {
-                Log.d("WIDGET_DEBUG", "JSON es NULL");
-            } else if (json.isEmpty()) {
-                Log.d("WIDGET_DEBUG", "JSON está vacío");
-            }
 
             if (json != null && !json.isEmpty()) {
-                Log.d("WIDGET_DEBUG", "2 - Voy a parsear JSON: " + json);
 
                 JSONObject obj = new JSONObject(json);
-
-                Log.d("WIDGET_DEBUG", "JSON parseado correctamente");
-                Log.d("WIDGET_DEBUG", "success = " + obj.optBoolean("success"));
 
                 if (obj.optBoolean("success")) {
 
                     JSONArray recetas = obj.optJSONArray("recetas");
 
-                    if (recetas == null) {
-                        Log.e("WIDGET_DEBUG", "NO EXISTE 'recetas' en JSON");
-                    }
-
                     if (recetas != null && recetas.length() > 0) {
-                        Log.d("WIDGET_DEBUG", "Número de recetas: " + recetas.length());
                         JSONObject receta =
                                 recetas.getJSONObject(new Random().nextInt(recetas.length()));
-                        Log.d("WIDGET_DEBUG", "Receta seleccionada: " + receta.optString("titulo"));
 
                         recetaId = receta.optInt("id", -1);
 
@@ -94,9 +76,7 @@ public class WidgetReceta extends AppWidgetProvider{
             }
 
         } catch (Exception e) {
-            //e.printStackTrace();
-            Log.e("WIDGET_DEBUG", "Error en widget", e);
-
+            e.printStackTrace();
             mostrarVacio(views);
         }
         // Botón "Otra receta"
