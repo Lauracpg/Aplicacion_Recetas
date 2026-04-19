@@ -136,8 +136,6 @@ public class ModoCocinaActivity extends AppCompatActivity {
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
-
-
     @Override
     protected void onStart() {
         super.onStart();

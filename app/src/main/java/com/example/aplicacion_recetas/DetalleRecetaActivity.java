@@ -3,6 +3,7 @@ package com.example.aplicacion_recetas;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -25,6 +26,26 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
     protected  void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
+
+        // coge la receta enviada desde la actividad anterior
+        if (savedInstanceState != null) {
+            receta = (Receta) savedInstanceState.getSerializable("receta");
+        } else {
+            receta = (Receta) getIntent().getSerializableExtra("receta");
+        }
+
+        // detectar si está en horizontal
+        if(getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE) {
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("recetaActual", receta); // pasar receta actual
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_detalle_receta);
 
         // color de elementos de la barra superior e inferior del dispositivo
@@ -49,12 +70,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
 
         int recetaIdIntent = getIntent().getIntExtra("receta_id", -1);
 
-        // coge la receta enviada desde la actividad anterior
-        if (savedInstanceState != null) {
-            receta = (Receta) savedInstanceState.getSerializable("receta");
-            mostrarEnFragment(receta);
-            return;
-        }
+        mostrarEnFragment(receta);
 
         if (recetaIdIntent != -1) {
             cargarRecetaDesdeId(recetaIdIntent);

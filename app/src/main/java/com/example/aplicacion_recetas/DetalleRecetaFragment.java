@@ -86,6 +86,15 @@ public class DetalleRecetaFragment extends Fragment {
         textViewIngredientes = view.findViewById(R.id.textViewIngredientes);
         textViewPasos = view.findViewById(R.id.textViewPasos);
         imageViewFoto = view.findViewById(R.id.imageViewFoto);
+        imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
+
+        if (savedInstanceState != null) {
+            recetaActual = (Receta) savedInstanceState.getSerializable("receta");
+        }
+
+        if (recetaActual != null) {
+            mostrarReceta(recetaActual);
+        }
 
         Button btnEliminar = view.findViewById(R.id.btnEliminarDetalle);
         btnEliminar.setOnClickListener(v -> {
@@ -113,7 +122,6 @@ public class DetalleRecetaFragment extends Fragment {
                         .getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_lista_recetas);
 
-        imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
         imageFavDetalle.setOnClickListener(v -> {
             if(recetaActual != null) {
                 if (recetaActual == null) return;
@@ -362,7 +370,9 @@ public class DetalleRecetaFragment extends Fragment {
 
     public void setReceta(Receta receta) {
         this.recetaActual = receta;
-        mostrarReceta(receta);
+        if (getView() != null) {
+            mostrarReceta(receta);
+        }
     }
 
     // Cargar receta en la interfaz
@@ -370,6 +380,7 @@ public class DetalleRecetaFragment extends Fragment {
         if (receta == null || getView() == null) return;
 
         recetaActual = receta;
+
         textViewTitulo.setText(receta.titulo);
         textViewCategoria.setText(receta.categoria);
         textViewTiempo.setText(receta.tiempo + " " + getString(R.string.minutos));
@@ -394,5 +405,11 @@ public class DetalleRecetaFragment extends Fragment {
             imageViewFoto.setVisibility(View.GONE);
             btnAgregarFoto.setText(getString(R.string.btn_agregar_foto));
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("receta", recetaActual);
     }
 }

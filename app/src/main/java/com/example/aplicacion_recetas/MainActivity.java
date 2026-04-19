@@ -60,10 +60,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements DialogConfirmacion.Listener,
         ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     FloatingActionButton btnAgregar;
-
     private ActivityResultLauncher<Intent> startForResult;
     private Receta recetaEliminar;
-
+    private Receta recetaActual;
     private ActivityResultLauncher<Intent> takePictureLauncher;
     private ImageView imgPerfil;
     private Bitmap fotoPerfil;
@@ -73,6 +72,14 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (getIntent() != null && getIntent().hasExtra("recetaActual")) {
+            recetaActual = (Receta) getIntent().getSerializableExtra("recetaActual");
+        }
+
+        if (savedInstanceState != null && recetaActual == null) {
+            recetaActual = (Receta) savedInstanceState.getSerializable("recetaActual");
+        }
 
         // color de elementos de la barra inferior y superior del dispositivo
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -112,6 +119,18 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
         cargarRecetasServidor();
 
+        getSupportFragmentManager().executePendingTransactions();
+
+        if (recetaActual != null) {
+            DetalleRecetaFragment fragment =
+                    (DetalleRecetaFragment) getSupportFragmentManager()
+                            .findFragmentById(R.id.fragment_detalle_receta);
+
+            if (fragment != null) {
+                fragment.setReceta(recetaActual);
+            }
+        }
+
         String rutaFoto = sesion.getFoto();
         if (rutaFoto != null) {
             String urlCompleta = "http://34.175.70.22:81/" + rutaFoto;
@@ -150,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             int id = item.getItemId();
             ListaRecetasFragment listaFragment =
                     (ListaRecetasFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
+
             if(id == R.id.menu_agregar_receta) {
                 Intent intent = new Intent(MainActivity.this, AgregarRecetaActivity.class);
                 startForResult.launch(intent);
@@ -239,6 +259,43 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 }
             }
         });
+    }
+
+    private void mostrarRecetaEnDetalle(Receta receta) {
+        if (receta == null) return;
+        DetalleRecetaFragment fragment =
+                (DetalleRecetaFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_detalle_receta);
+
+        if (fragment != null) {
+            fragment.setReceta(receta);
+        }
+    }
+
+    // Maneja la selección de receta desde la lista
+    @Override
+    public void onRecetaSeleccionada(Receta receta) {
+        recetaActual = receta;
+        int orientation = getResources().getConfiguration().orientation;
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
+            // mostrar receta en fragment de detalle
+            DetalleRecetaFragment detalle = (DetalleRecetaFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
+            if(detalle != null) {
+                detalle.mostrarReceta(receta);
+            }
+        } else { // vertical
+            // abrir actividad detalle
+            Intent i = new Intent(this, DetalleRecetaActivity.class);
+            i.putExtra("receta", receta);
+            startActivity(i);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("recetaActual", recetaActual);
     }
 
     @Override
@@ -366,25 +423,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 e.printStackTrace();
             }
         }).start();
-    }
-
-    // Maneja la selección de receta desde la lista
-    @Override
-    public void onRecetaSeleccionada(Receta receta) {
-        int orientation = getResources().getConfiguration().orientation;
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
-            // mostrar receta en fragment de detalle
-            DetalleRecetaFragment detalle = (DetalleRecetaFragment)
-                    getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
-            if(detalle != null) {
-                detalle.mostrarReceta(receta);
-            }
-        } else { // vertical
-            // abrir actividad detalle
-            Intent i = new Intent(this, DetalleRecetaActivity.class);
-            i.putExtra("receta", receta);
-            startActivity(i);
-        }
     }
 
     // Solicitar eliminar receta desde lista
