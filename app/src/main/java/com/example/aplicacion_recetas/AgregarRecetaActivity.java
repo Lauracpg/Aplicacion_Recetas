@@ -197,6 +197,12 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
     // mostrar diálogo para elegir entre galería o cámara
     private void mostrarOpcionesFoto() {
         String[] opciones = {
@@ -227,10 +233,12 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         cameraLauncher.launch(intent);
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
+    // Abre el selector de imaégenes del sistema
+    private void abrirGaleria() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_GALERIA);
     }
 
     // Recoge, valida y devuelve los datos de la receta
@@ -316,19 +324,6 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         }
     }
 
-    // lanzar worker para actualizar datos del widget
-    private void actualizarWidgetDatos() {
-        Data input = new Data.Builder()
-                .putString("accion", "obtener")
-                .build();
-
-        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(RecetasWorker.class)
-                .setInputData(input)
-                .build();
-
-        WorkManager.getInstance(this).enqueue(request);
-    }
-
     // subir imagen al servidor con WorkManager
     private void subirImagen(Intent data) {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
@@ -386,12 +381,17 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 });
     }
 
-    // Abre el selector de imaégenes del sistema
-    private void abrirGaleria() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.setType("image/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_GALERIA);
+    // lanzar worker para actualizar datos del widget
+    private void actualizarWidgetDatos() {
+        Data input = new Data.Builder()
+                .putString("accion", "obtener")
+                .build();
+
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(RecetasWorker.class)
+                .setInputData(input)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(request);
     }
 
     // Recibe imagen seleccionada desde galeria

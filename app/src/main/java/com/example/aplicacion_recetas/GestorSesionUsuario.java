@@ -27,6 +27,16 @@ public class GestorSesionUsuario {
                 .apply();
     }
 
+    // guarda la ruta de la foto de perfil del usuario
+    public void guardarFoto(String ruta) {
+        prefs.edit().putString(KEY_FOTO, ruta).apply();
+    }
+
+    // cierra la sesión del usuario eliminado los datos guardados
+    public void cerrarSesion() {
+        prefs.edit().clear().apply();
+    }
+
     public int getUserId() {
         return prefs.getInt(KEY_ID, -1);
     }
@@ -35,26 +45,16 @@ public class GestorSesionUsuario {
         return prefs.getString(KEY_NOMBRE, null);
     }
 
-    // comprueba si hay una sesión activa
-    public boolean estaLogueado() {
-        return getUserId() != -1;
-    }
-
-    // cierra la sesión del usuario eliminado los datos guardados
-    public void cerrarSesion() {
-        prefs.edit().clear().apply();
-    }
-
     public String getUserEmail() {
         return prefs.getString(KEY_EMAIL, null);
     }
 
-    // guarda la ruta de la foto de perfil del usuario
-    public void guardarFoto(String ruta) {
-        prefs.edit().putString(KEY_FOTO, ruta).apply();
-    }
-
     public String getFoto() {
         return prefs.getString(KEY_FOTO, null);
+    }
+
+    // comprueba si hay una sesión activa
+    public boolean estaLogueado() {
+        return getUserId() != -1;
     }
 }

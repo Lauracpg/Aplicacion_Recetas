@@ -21,11 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ModoCocinaActivity extends AppCompatActivity {
-    private Receta receta;
-
     private TextView txtPaso, txtTitulo, txtProgreso;
     private Button btnSiguiente, btnAnterior, btnSalir;
-
+    private Receta receta;
     private List<String> pasos; // lista de pasos ya procesados
 
     private ModoCocinaService servicio; // servicio de modo cocina

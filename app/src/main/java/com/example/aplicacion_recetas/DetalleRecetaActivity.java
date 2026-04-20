@@ -83,6 +83,17 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("receta", receta);
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
     // mostrar receta dentro del fragment de detalle
     private void mostrarEnFragment(Receta receta) {
         // obtiene el fragment de detalle de la receta
@@ -149,17 +160,6 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                 });
     }
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable("receta", receta);
-    }
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
-    }
-
     // eliminar receta desde el fragment de detalle
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
@@ -197,6 +197,14 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         });
     }
 
+    // notifica a MainActivity de que hay cambios en favoritos
+    @Override
+    public void onFavoritoCambiado(Receta recetaActual) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("reload", true);
+        setResult(RESULT_OK, resultIntent);
+    }
+
     // fuerza actualización del widget tras cambios en recetas
     private void refrescarWidget() {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
@@ -211,14 +219,6 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         .build();
 
         WorkManager.getInstance(this).enqueue(request);
-    }
-
-    // notifica a MainActivity de que hay cambios en favoritos
-    @Override
-    public void onFavoritoCambiado(Receta recetaActual) {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("reload", true);
-        setResult(RESULT_OK, resultIntent);
     }
 
     // Crea una notificación indicando que se ha eliminado una receta

@@ -42,11 +42,11 @@ public class DetalleRecetaFragment extends Fragment {
     private ImageView imageFavDetalle;
     private Button btnAgregarFoto;
     private Receta recetaActual;
-    private static final int REQUEST_GALERIA = 200;
     private Listener listener;
+    private static final int REQUEST_GALERIA = 200;
     private Uri imagenSeleccionada = null;
-    private boolean imgChanged = false;
     private Uri fotoCamaraUri;
+    private boolean imgChanged = false;
 
     // launchers para cámara y permisos
     private ActivityResultLauncher<Intent> cameraLauncher;
@@ -64,14 +64,6 @@ public class DetalleRecetaFragment extends Fragment {
         // comprueba si la activity implementa el listener
         if (context instanceof Listener) {
             listener = (Listener) context;
-        }
-    }
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        // si ya había una receta cargada, se muestra tras recrear eñ fragment
-        if (recetaActual != null) {
-            mostrarReceta(recetaActual);
         }
     }
 
@@ -232,6 +224,22 @@ public class DetalleRecetaFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        // si ya había una receta cargada, se muestra tras recrear eñ fragment
+        if (recetaActual != null) {
+            mostrarReceta(recetaActual);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // guarda estado del fragment (receta actual)
+        outState.putSerializable("receta", recetaActual);
+    }
+
     // opciones de foto
     private void mostrarOpcionesFoto() {
         String[] opciones = {
@@ -258,6 +266,39 @@ public class DetalleRecetaFragment extends Fragment {
     private void abrirCamara() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraLauncher.launch(intent);
+    }
+
+    // Abre la galería para seleccionar una imagen
+    private void abrirGaleria() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_GALERIA);
+    }
+
+    // Recibe la imagen seleccionada
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
+            Uri imgSelected = data.getData();
+
+            if(imgSelected != null && recetaActual != null) {
+                // permiso para poder acceder a la imagen después
+                requireContext().getContentResolver()
+                        .takePersistableUriPermission(imgSelected,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        );
+
+                imageViewFoto.setImageURI(imgSelected);
+                imageViewFoto.setVisibility(View.VISIBLE);
+
+                imagenSeleccionada = imgSelected;
+                recetaActual.fotoUri = imgSelected.toString();
+                imgChanged = true;
+            }
+        }
     }
 
     // guardar cambios de la imagen
@@ -349,39 +390,6 @@ public class DetalleRecetaFragment extends Fragment {
         }).start();
     }
 
-    // Abre la galería para seleccionar una imagen
-    private void abrirGaleria() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.setType("image/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_GALERIA);
-    }
-
-    // Recibe la imagen seleccionada
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
-            Uri imgSelected = data.getData();
-
-            if(imgSelected != null && recetaActual != null) {
-                // permiso para poder acceder a la imagen después
-                requireContext().getContentResolver()
-                        .takePersistableUriPermission(imgSelected,
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION
-                );
-
-                imageViewFoto.setImageURI(imgSelected);
-                imageViewFoto.setVisibility(View.VISIBLE);
-
-                imagenSeleccionada = imgSelected;
-                recetaActual.fotoUri = imgSelected.toString();
-                imgChanged = true;
-            }
-        }
-    }
-
     public void setReceta(Receta receta) {
         this.recetaActual = receta;
         if (getView() != null) {
@@ -419,12 +427,5 @@ public class DetalleRecetaFragment extends Fragment {
             imageViewFoto.setVisibility(View.GONE);
             btnAgregarFoto.setText(getString(R.string.btn_agregar_foto));
         }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // guarda estado del fragment (receta actual)
-        outState.putSerializable("receta", recetaActual);
     }
 }

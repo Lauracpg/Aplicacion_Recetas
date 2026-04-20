@@ -37,12 +37,11 @@ import java.util.List;
 
 public class SupermercadosActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final int LOCATION_PERMISSION_REQUEST = 1;
-    private FusedLocationProviderClient fusedLocationClient;
     private GoogleMap mMap;
-
     private Marker userMarker;
     private final List<Marker> supermercados = new ArrayList<>();
     private LatLng lastSearchLocation = null;
+    private FusedLocationProviderClient fusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +73,6 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
 
         // cliente de localización GPS
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
     }
 
     @Override
@@ -193,7 +186,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
                         try{
                             JSONObject place = results.getJSONObject(i);
                             JSONObject loc = place.getJSONObject("geometry")
-                                                    .getJSONObject("location");
+                                    .getJSONObject("location");
 
                             LatLng supermercado = new LatLng(
                                     loc.getDouble("lat"),
@@ -230,6 +223,11 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
             m.remove();
         }
         supermercados.clear();
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
     }
 }
 

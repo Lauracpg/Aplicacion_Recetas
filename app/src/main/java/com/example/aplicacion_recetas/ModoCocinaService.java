@@ -20,14 +20,6 @@ public class ModoCocinaService extends Service {
 
     // Binder para comunicación entre activity y service
     private final IBinder binder = new LocalBinder();
-    private Receta receta;
-    private int index = 0;
-    private List<String> pasos;
-    private NotificationManager notificationManager;
-
-    public int getIndex() {
-        return index;
-    }
 
     // permite a la activity acceder al servicio directamente
     public class LocalBinder extends Binder {
@@ -35,6 +27,10 @@ public class ModoCocinaService extends Service {
             return ModoCocinaService.this;
         }
     }
+    private Receta receta;
+    private List<String> pasos;
+    private int index = 0;
+    private NotificationManager notificationManager;
 
     @Override
     public void onCreate() {
@@ -56,6 +52,48 @@ public class ModoCocinaService extends Service {
         // mantiene el servicio en segundo plano
         crearNotificacionForeground();
         return START_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    // avanza al siguiente paso de la receta
+    public void siguientePaso() {
+        if (receta == null) return;
+        if (index < pasos.size() - 1) {
+            index++;
+            enviarBroadcast();
+            actualizarNotificacion();
+        }
+    }
+
+    // vuelve al paso anterior
+    public void anteriorPaso() {
+        if (index > 0) {
+            index--;
+            enviarBroadcast();
+            actualizarNotificacion();
+        }
+    }
+
+    // detiene el servicio foreground completamente
+    public void detenerServicio() {
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopSelf();
+    }
+
+    // notifica a la activity que el paso ha cambiado
+    private void enviarBroadcast() {
+        Intent broadcast = new Intent(ACTION_PASO);
+        broadcast.setPackage(getPackageName());
+        broadcast.putExtra(EXTRA_INDEX, index);
+        sendBroadcast(broadcast);
     }
 
     // notifiación persistente del modo cocina
@@ -97,39 +135,6 @@ public class ModoCocinaService extends Service {
         notificationManager.notify(1, notification);
     }
 
-    // avanza al siguiente paso de la receta
-    public void siguientePaso() {
-        if (receta == null) return;
-        if (index < pasos.size() - 1) {
-            index++;
-            enviarBroadcast();
-            actualizarNotificacion();
-        }
-    }
-
-    // vuelve al paso anterior
-    public void anteriorPaso() {
-        if (index > 0) {
-            index--;
-            enviarBroadcast();
-            actualizarNotificacion();
-        }
-    }
-
-    // notifica a la activity que el paso ha cambiado
-    private void enviarBroadcast() {
-        Intent broadcast = new Intent(ACTION_PASO);
-        broadcast.setPackage(getPackageName());
-        broadcast.putExtra(EXTRA_INDEX, index);
-        sendBroadcast(broadcast);
-    }
-
-    // detiene el servicio foreground completamente
-    public void detenerServicio() {
-        stopForeground(STOP_FOREGROUND_REMOVE);
-        stopSelf();
-    }
-
     // convierte el string de pasos en lista usable
     private List<String> parsePasos(String pasosRaw) {
         List<String> lista = new ArrayList<>();
@@ -145,10 +150,5 @@ public class ModoCocinaService extends Service {
             }
         }
         return lista;
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
     }
 }
