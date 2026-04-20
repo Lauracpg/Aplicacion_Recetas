@@ -15,6 +15,9 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,6 +45,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
     private final List<Marker> supermercados = new ArrayList<>();
     private LatLng lastSearchLocation = null;
     private FusedLocationProviderClient fusedLocationClient;
+    private LocationCallback locationCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +77,20 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
 
         // cliente de localización GPS
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                if(locationResult == null) return;
+
+                Location location = locationResult.getLastLocation();
+                if(location != null) {
+                    LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
+                    updateUser(pos);
+                    buscarSupermercados(pos);
+                }
+            }
+        };
     }
 
     @Override
@@ -101,6 +119,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST && grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
             enableUserLocation();
         }
     }
@@ -114,16 +133,17 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         // activa el punto azul del usuario en el mapa
         mMap.setMyLocationEnabled(true);
 
-        // obtiene la última ubicación conocida
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
 
-                LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
-                updateUser(pos); // coloca marcador del usuario
-                buscarSupermercados(pos); // busca supermercados cercanos
-                lastSearchLocation = pos;
-            }
-        });
+        // obtiene la última ubicación conocida
+        fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                getMainLooper()
+        );
     }
 
     private void updateUser(LatLng pos) {
@@ -133,7 +153,8 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         // crear marcador del usuario
         userMarker = mMap.addMarker(new MarkerOptions()
                 .position(pos).title(getString(R.string.ubicacion))
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
+                .icon(BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_VIOLET))
         );
 
         // mueve la cámara al usuario
@@ -224,6 +245,13 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         }
         supermercados.clear();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
         finish();
