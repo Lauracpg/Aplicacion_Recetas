@@ -61,9 +61,9 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         ListaRecetasFragment.Listener, DetalleRecetaFragment.Listener{
     FloatingActionButton btnAgregar;
     private ActivityResultLauncher<Intent> startForResult;
+    private ActivityResultLauncher<Intent> takePictureLauncher;
     private Receta recetaEliminar;
     private Receta recetaActual;
-    private ActivityResultLauncher<Intent> takePictureLauncher;
     private ImageView imgPerfil;
     private Bitmap fotoPerfil;
 
@@ -271,33 +271,6 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         });
     }
 
-    // Maneja la selección de receta desde la lista
-    @Override
-    public void onRecetaSeleccionada(Receta receta) {
-        recetaActual = receta; // guardar receta actual para mantener el estado (rotación)
-        int orientation = getResources().getConfiguration().orientation;
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // comprobar orientación
-            // mostrar receta en fragment de detalle
-            DetalleRecetaFragment detalle = (DetalleRecetaFragment)
-                    getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
-            if(detalle != null) {
-                detalle.mostrarReceta(receta);
-            }
-        } else { // vertical
-            // abrir actividad detalle
-            Intent i = new Intent(this, DetalleRecetaActivity.class);
-            i.putExtra("receta", receta);
-            startActivity(i);
-        }
-    }
-
-    // guardar el estado de la receta actual en rotación especialmente
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable("recetaActual", recetaActual);
-    }
-
     // se recargan las recetas para mantener datos actualizados, se ejecuta al volver a la actividad
     @Override
     protected void onResume() {
@@ -305,64 +278,11 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         cargarRecetasServidor();
     }
 
-    // subir foto de perfil del usuario al servidor
-    private void subirFotoPerfil(Bitmap bitmap) {
-        try {
-            // guardar temporalmente la foto en caché
-            File file = new File(getCacheDir(), "foto.jpg");
-
-            FileOutputStream fos = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
-            fos.close();
-
-            GestorSesionUsuario sesion = new GestorSesionUsuario(this);
-            // preparar la petición para el worker que sube la foto
-            Data input = new Data.Builder()
-                    .putString("tipo", "perfil")
-                    .putString("email", sesion.getUserEmail())
-                    .putString("ruta_local", file.getAbsolutePath())
-                    .build();
-
-            OneTimeWorkRequest request =
-                    new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
-                            .setInputData(input)
-                            .build();
-            // lanzar proceso en segundo plano
-            WorkManager.getInstance(this).enqueue(request);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // abrir cámara del dispositivo para hacer una foto
-    private void abrirCamara() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureLauncher.launch(intent);
-    }
-
-    // Inflar menú de idiomas
+    // guardar el estado de la receta actual en rotación especialmente
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_idioma, menu);
-        return true;
-    }
-
-    // gestionar la selcción de idioma desde el menú
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        // cambia el idioma y recrea la activity para aplicar el cambio
-        if(id == R.id.menu_es) {
-            GestorIdioma.setIdioma(this, "es");
-            recreate();
-            return true;
-        } else if(id == R.id.menu_eu) {
-            GestorIdioma.setIdioma(this, "eu");
-            recreate();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("recetaActual", recetaActual);
     }
 
     // obtener las recetas del servidor mediante conexióm HTTP
@@ -477,16 +397,58 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 });
     }
 
-    // callback del diálogo de salir de la app
-    @Override
-    public void onConfirmar() {
-        finish();
+    // abrir cámara del dispositivo para hacer una foto
+    private void abrirCamara() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePictureLauncher.launch(intent);
     }
 
-    // callback cancelar salir
+    // subir foto de perfil del usuario al servidor
+    private void subirFotoPerfil(Bitmap bitmap) {
+        try {
+            // guardar temporalmente la foto en caché
+            File file = new File(getCacheDir(), "foto.jpg");
+
+            FileOutputStream fos = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
+            fos.close();
+
+            GestorSesionUsuario sesion = new GestorSesionUsuario(this);
+            // preparar la petición para el worker que sube la foto
+            Data input = new Data.Builder()
+                    .putString("tipo", "perfil")
+                    .putString("email", sesion.getUserEmail())
+                    .putString("ruta_local", file.getAbsolutePath())
+                    .build();
+
+            OneTimeWorkRequest request =
+                    new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
+                            .setInputData(input)
+                            .build();
+            // lanzar proceso en segundo plano
+            WorkManager.getInstance(this).enqueue(request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Manejar permiso de notificaciones
     @Override
-    public void onCancelar() {
-        // nada
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 200) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirCamara();
+            } else {
+                Toast.makeText(this,
+                        "Permiso de cámara denegado",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     // gestionar el envío de notificación al añadir una receta (permisos)
@@ -542,21 +504,40 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
-    // Manejar permiso de notificaciones
+    // lanza una notificación cuando se elimina una receta
+    private void lanzarNotificacionEliminada(String titulo) {
+        String canalId = "canal_recetas";
+        NotificationManager manager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this, canalId)
+                        .setSmallIcon(android.R.drawable.ic_delete)
+                        .setContentTitle(getString(R.string.noti_receta_eliminada_titulo))
+                        .setContentText(getString(R.string.noti_receta_eliminada_texto, titulo))
+                        .setSubText("Receta eliminada correctamente")
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true);
+        manager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+    // Maneja la selección de receta desde la lista
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 200) {
-            if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                abrirCamara();
-            } else {
-                Toast.makeText(this,
-                        "Permiso de cámara denegado",
-                        Toast.LENGTH_SHORT).show();
+    public void onRecetaSeleccionada(Receta receta) {
+        recetaActual = receta; // guardar receta actual para mantener el estado (rotación)
+        int orientation = getResources().getConfiguration().orientation;
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // comprobar orientación
+            // mostrar receta en fragment de detalle
+            DetalleRecetaFragment detalle = (DetalleRecetaFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
+            if(detalle != null) {
+                detalle.mostrarReceta(receta);
             }
+        } else { // vertical
+            // abrir actividad detalle
+            Intent i = new Intent(this, DetalleRecetaActivity.class);
+            i.putExtra("receta", receta);
+            startActivity(i);
         }
     }
 
@@ -574,8 +555,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
         OneTimeWorkRequest request =
                 new OneTimeWorkRequest.Builder(RecetasWorker.class)
-                .setInputData(input)
-                .build();
+                        .setInputData(input)
+                        .build();
 
         WorkManager.getInstance(this).enqueue(request);
         // después de eliminar se actualiza la lista y se notifica al usuario
@@ -587,7 +568,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                     Toast.makeText(this, getString(R.string.receta_eliminada),
                             Toast.LENGTH_SHORT).show();
                     if(getResources().getConfiguration().orientation
-                    != Configuration.ORIENTATION_LANDSCAPE) {
+                            != Configuration.ORIENTATION_LANDSCAPE) {
                         finish();
                     }
                 });
@@ -599,20 +580,39 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         cargarRecetasServidor(); // recargar recetas para reflejar cambio
     }
 
-    // lanza una notificación cuando se elimina una receta
-    private void lanzarNotificacionEliminada(String titulo) {
-        String canalId = "canal_recetas";
-        NotificationManager manager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    // callback del diálogo de salir de la app
+    @Override
+    public void onConfirmar() {
+        finish();
+    }
 
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this, canalId)
-                        .setSmallIcon(android.R.drawable.ic_delete)
-                        .setContentTitle(getString(R.string.noti_receta_eliminada_titulo))
-                        .setContentText(getString(R.string.noti_receta_eliminada_texto, titulo))
-                        .setSubText("Receta eliminada correctamente")
-                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                        .setAutoCancel(true);
-        manager.notify((int) System.currentTimeMillis(), builder.build());
+    // callback cancelar salir
+    @Override
+    public void onCancelar() {
+        // nada
+    }
+
+    // Inflar menú de idiomas
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_idioma, menu);
+        return true;
+    }
+
+    // gestionar la selcción de idioma desde el menú
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        // cambia el idioma y recrea la activity para aplicar el cambio
+        if(id == R.id.menu_es) {
+            GestorIdioma.setIdioma(this, "es");
+            recreate();
+            return true;
+        } else if(id == R.id.menu_eu) {
+            GestorIdioma.setIdioma(this, "eu");
+            recreate();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
