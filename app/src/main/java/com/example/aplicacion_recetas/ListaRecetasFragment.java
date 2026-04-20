@@ -28,12 +28,14 @@ public class ListaRecetasFragment extends Fragment {
 
     // indica si se están mostrando solo las recetas favoritas
     private boolean mostrarFavoritas = false;
+
+    // lista de recetas cargadas
     private List<Receta> recetasActuales = new ArrayList<>();
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        // comprueba si la actividad que contiene el fragment implementa la interfaz listener
+        // comprueba si la actividad que contiene el fragment (MainActivity) implementa el listener
         if(context instanceof Listener) {
             listener = (Listener) context;
         } else {
@@ -41,14 +43,15 @@ public class ListaRecetasFragment extends Fragment {
         }
     }
 
+    // Se crea la vista del fragment e inicializa el recyclerView
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // se infla el layout del fragmento
+        // inflar layout del fragment
         View view = inflater.inflate(R.layout.fragment_lista_recetas, container, false);
         recyclerView = view.findViewById(R.id.recyclerRecetas);
-        // se establece un LinearLayoutManager para que aparezca en forma de lista vertical
+        // LinearLayoutManager para que aparezca en forma de lista vertical
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setHasFixedSize(true); // el tamaño del RecyclerView no cambia
 
@@ -57,13 +60,17 @@ public class ListaRecetasFragment extends Fragment {
             // cuando se pulsa una receta se notifica a la actividad
             @Override
             public void onRecetaClick(Receta receta) {
-                if(listener != null) listener.onRecetaSeleccionada(receta);
+                if(listener != null) {
+                    listener.onRecetaSeleccionada(receta);
+                }
             }
 
             // cuando se quiere eliminar una receta se notifica a la actividad
             @Override
             public void onRecetaEliminar(Receta receta) {
-                if(listener != null) listener.onRecetaEliminar(receta);
+                if(listener != null) {
+                    listener.onRecetaEliminar(receta);
+                }
             }
         });
         // asignar el adapter al RecyclerView
@@ -71,6 +78,7 @@ public class ListaRecetasFragment extends Fragment {
         return view;
     }
 
+    // recibe la lista de recetas desde la activity o servidor
     public void setRecetas(List<Receta> recetas) {
         this.recetasActuales = recetas;
         adapter.setRecetas(recetas);
@@ -83,7 +91,6 @@ public class ListaRecetasFragment extends Fragment {
     }
 
     // Muestra solo las recetas favoritas
-
     public void mostrarFavoritas() {
         mostrarFavoritas = true;
         List<Receta> favoritas = new ArrayList<>();

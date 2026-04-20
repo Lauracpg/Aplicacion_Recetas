@@ -26,12 +26,13 @@ public class ModoCocinaActivity extends AppCompatActivity {
     private TextView txtPaso, txtTitulo, txtProgreso;
     private Button btnSiguiente, btnAnterior, btnSalir;
 
-    private List<String> pasos;
+    private List<String> pasos; // lista de pasos ya procesados
 
-    private ModoCocinaService servicio;
+    private ModoCocinaService servicio; // servicio de modo cocina
     private boolean bound = false;
-    private boolean receiverRegistered = false;
+    private boolean receiverRegistered = false; // control de registro del BroadcastReceiver
 
+    // recibe actualizaciones del servicio (cambio de paso)
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -45,13 +46,14 @@ public class ModoCocinaActivity extends AppCompatActivity {
         }
     };
 
+    // conexión al servicio de modo cocina
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
             ModoCocinaService.LocalBinder b = (ModoCocinaService.LocalBinder) binder;
             servicio = b.getService();
             bound = true;
-
+            // sincroniza la UI con el estado actual del servicio
             mostrarPaso(servicio.getIndex());
         }
 
@@ -84,12 +86,14 @@ public class ModoCocinaActivity extends AppCompatActivity {
         btnAnterior = findViewById(R.id.btnAnterior);
         btnSalir = findViewById(R.id.btnSalir);
 
+        // mantener pantalla encendida durante la receta
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+        // ocultar action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
+        // recibir receta desde la actividad anterior
         receta = (Receta) getIntent().getSerializableExtra("receta");
         if (receta == null) {
             finish();
@@ -98,8 +102,10 @@ public class ModoCocinaActivity extends AppCompatActivity {
 
         txtTitulo.setText(receta.titulo);
 
+        // convertir pasos en lista legible
         pasos = parsePasos(receta.pasos);
 
+        // navegación de pasos mediante servicio
         btnSiguiente.setOnClickListener(v -> {
             if (bound && servicio != null) {
                 servicio.siguientePaso();
@@ -113,6 +119,7 @@ public class ModoCocinaActivity extends AppCompatActivity {
         });
 
         btnSalir.setOnClickListener(v -> {
+            // detiene el servicio al salir del modo cocina
             if (bound && servicio != null) {
                 servicio.detenerServicio();
             }
@@ -124,6 +131,7 @@ public class ModoCocinaActivity extends AppCompatActivity {
             finish();
         });
 
+        // iniciar servicio en foreground
         Intent intent = new Intent(this, ModoCocinaService.class);
         intent.putExtra("receta", receta);
 
@@ -132,14 +140,14 @@ public class ModoCocinaActivity extends AppCompatActivity {
         } else {
             startService(intent);
         }
-
+        // vincularse al servicio
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
+        // registrar receiver para recibir cambios de paso
         IntentFilter filter = new IntentFilter(ModoCocinaService.ACTION_PASO);
 
         ContextCompat.registerReceiver(
@@ -167,6 +175,7 @@ public class ModoCocinaActivity extends AppCompatActivity {
         }
     }
 
+    // muestra el paso actual y actualiza controles
     private void mostrarPaso(int index) {
         if (pasos == null || pasos.isEmpty()) return;
 
@@ -183,10 +192,12 @@ public class ModoCocinaActivity extends AppCompatActivity {
         btnSiguiente.setAlpha(index < pasos.size() - 1 ? 1f : 0.5f);
     }
 
+    // convierte el string de pasos en lista limpia
     private List<String> parsePasos(String pasosRaw) {
         List<String> lista = new ArrayList<>();
         if(pasosRaw == null) return lista;
 
+        // separa por numeración
         String[] partes = pasosRaw.split("\\d+\\.");
 
         for (String p : partes) {

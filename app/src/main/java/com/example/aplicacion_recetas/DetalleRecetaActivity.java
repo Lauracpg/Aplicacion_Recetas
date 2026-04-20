@@ -22,19 +22,20 @@ import org.json.JSONObject;
 
 public class DetalleRecetaActivity extends AppCompatActivity implements DetalleRecetaFragment.Listener{
     private Receta receta;
+
     @Override
     protected  void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
         super.onCreate(savedInstanceState);
 
-        // coge la receta enviada desde la actividad anterior
+        // coge la receta enviada desde la actividad anterior (rotación u otra actividad)
         if (savedInstanceState != null) {
             receta = (Receta) savedInstanceState.getSerializable("receta");
         } else {
             receta = (Receta) getIntent().getSerializableExtra("receta");
         }
 
-        // detectar si está en horizontal
+        // si está en horizontal, no se usa esta activity y se redirige a MainActivity para mostrar detalle fragment
         if(getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE) {
 
@@ -59,9 +60,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        // config volver en la ActionBar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.detalle_receta);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -72,6 +71,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
 
         mostrarEnFragment(receta);
 
+        // si viene un id, se carga la receta desde el servidor
         if (recetaIdIntent != -1) {
             cargarRecetaDesdeId(recetaIdIntent);
         } else {
@@ -83,6 +83,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         }
     }
 
+    // mostrar receta dentro del fragment de detalle
     private void mostrarEnFragment(Receta receta) {
         // obtiene el fragment de detalle de la receta
         DetalleRecetaFragment fragment =
@@ -94,6 +95,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         }
     }
 
+    // cargar una receta desde el servidor filtrando por id
     private void cargarRecetaDesdeId(int id) {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
         Data input = new Data.Builder()
@@ -108,6 +110,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
 
         WorkManager.getInstance(this).enqueue(request);
 
+        // observar la respuesta del servidor y buscar la receta por id
         WorkManager.getInstance(this)
                 .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
@@ -157,7 +160,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         return true;
     }
 
-    // Cuando desde el fragment se pulsa eliminar receta
+    // eliminar receta desde el fragment de detalle
     @Override
     public void onEliminarDesdeDetalle(Receta receta) {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
@@ -194,6 +197,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
                         });
     }
 
+    // fuerza actualización del widget tras cambios en recetas
     private void refrescarWidget() {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
         Data input = new Data.Builder()
@@ -209,6 +213,7 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         WorkManager.getInstance(this).enqueue(request);
     }
 
+    // notifica a MainActivity de que hay cambios en favoritos
     @Override
     public void onFavoritoCambiado(Receta recetaActual) {
         Intent resultIntent = new Intent();
@@ -216,12 +221,12 @@ public class DetalleRecetaActivity extends AppCompatActivity implements DetalleR
         setResult(RESULT_OK, resultIntent);
     }
 
-    // Crea un notificación indicando que se ha eliminado una receta
+    // Crea una notificación indicando que se ha eliminado una receta
     private void lanzarNotificacionEliminada(String titulo) {
         String canalId = "canal_recetas";
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // construiye la notificación
+        // construye la notificación
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this, canalId)
                         .setSmallIcon(android.R.drawable.ic_delete)

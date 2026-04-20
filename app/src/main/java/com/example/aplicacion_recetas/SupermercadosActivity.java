@@ -50,10 +50,12 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_supermercados);
 
+        // inicializar el mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // toolbar superior
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -70,6 +72,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // cliente de localización GPS
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
@@ -82,10 +85,11 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        requestLocationPermission();
+        requestLocationPermission(); // pide permisos de ubicación
     }
 
     private void requestLocationPermission() {
+        // si no hay permiso, lo solicita
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -94,7 +98,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_PERMISSION_REQUEST);
         } else {
-            enableUserLocation();
+            enableUserLocation(); // si ya está concedido
         }
     }
 
@@ -114,14 +118,16 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
             return;
         }
 
+        // activa el punto azul del usuario en el mapa
         mMap.setMyLocationEnabled(true);
 
+        // obtiene la última ubicación conocida
         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
             if (location != null) {
 
                 LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
-                updateUser(pos);
-                buscarSupermercados(pos);
+                updateUser(pos); // coloca marcador del usuario
+                buscarSupermercados(pos); // busca supermercados cercanos
                 lastSearchLocation = pos;
             }
         });
@@ -129,17 +135,20 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
 
     private void updateUser(LatLng pos) {
         if(userMarker != null) {
-            userMarker.remove();
+            userMarker.remove(); // eliminar anterior
         }
+        // crear marcador del usuario
         userMarker = mMap.addMarker(new MarkerOptions()
                 .position(pos).title(getString(R.string.ubicacion))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET))
         );
+
+        // mueve la cámara al usuario
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 15f));
     }
 
     private void buscarSupermercados(LatLng location) {
-
+        // evita volver a buscar si el usuario no se ha movido mucho
         if(lastSearchLocation != null && distanciaEntre(lastSearchLocation, location) < 200) {
             return;
         }
@@ -154,6 +163,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
                 "&type=supermarket" +
                 "&key=" + apiKey;
 
+        // petición HTTP en segundo plano
         new Thread(() -> {
             try {
                 HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
@@ -169,7 +179,6 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
                     json.append(line);
                 }
 
-
                 JSONObject obj = new JSONObject(json.toString());
 
                 JSONArray results = obj.getJSONArray("results");
@@ -178,7 +187,7 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
                     return;
                 }
 
-
+                // pintar supermercados en el mapa
                 runOnUiThread(() -> {
                     for (int i = 0; i < results.length(); i++) {
                         try{
@@ -208,13 +217,14 @@ public class SupermercadosActivity extends AppCompatActivity implements OnMapRea
         }).start();
     }
 
+    // distancia entre puntos
     private float distanciaEntre(LatLng a, LatLng b) {
         float[] result = new float[1];
         Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, result);
         return result[0];
     }
 
-
+    // limpiar marcadores
     private void clearSupermercados() {
         for (Marker m : supermercados) {
             m.remove();

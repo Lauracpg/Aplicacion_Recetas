@@ -29,7 +29,9 @@ public class SubirImagenWorker extends Worker {
     @Override
     public Result doWork() {
         try {
-            String tipo = getInputData().getString("tipo"); //foto de perfil o foto de receta
+            // tipo de imagen: perfil o receta
+            String tipo = getInputData().getString("tipo");
+            // ruta local del archivo en el dispositivo
             String rutaLocal = getInputData().getString("ruta_local");
 
             if (tipo == null || rutaLocal  == null) {
@@ -38,6 +40,7 @@ public class SubirImagenWorker extends Worker {
 
             File file = new File(rutaLocal);
 
+            // convertir el archivo a Base64 para enviarlo por HTTP
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             FileInputStream fis = new FileInputStream(file);
 
@@ -50,6 +53,7 @@ public class SubirImagenWorker extends Worker {
 
             String imgBase64 = Base64.encodeToString(buffer.toByteArray(), Base64.DEFAULT);
 
+            // endpoint del servidor que recibe la foto
             URL url = new URL("http://34.175.70.22:81/subir_foto.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -60,11 +64,13 @@ public class SubirImagenWorker extends Worker {
                     .appendQueryParameter("tipo", tipo)
                     .appendQueryParameter("imagen", imgBase64);
 
+            // params según tipo de foto
             if("perfil".equals(tipo)) {
                 String email = getInputData().getString("email");
                 builder.appendQueryParameter("email", email);
 
             } else if("receta".equals(tipo)) {
+                // foto de una receta concreta
                 String imagenId = getInputData().getString("imagenId");
                 Integer idReceta = getInputData().getInt("idReceta", 0);
                 int idUsuario = getInputData().getInt("idUsuario", 0);
@@ -79,6 +85,7 @@ public class SubirImagenWorker extends Worker {
                 builder.appendQueryParameter("idUsuario", String.valueOf(idUsuario));
             }
 
+            // convertir params a forma URL encoded
             String params = builder.build().getEncodedQuery();
 
             OutputStream os = conn.getOutputStream();
@@ -86,6 +93,7 @@ public class SubirImagenWorker extends Worker {
             os.flush();
             os.close();
 
+            // leer respuesta del servidor
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(conn.getInputStream())
             );
@@ -101,18 +109,22 @@ public class SubirImagenWorker extends Worker {
 
             JSONObject json = new JSONObject(response.toString());
 
+            // si la subida ha ido bien
             if(json.optBoolean("success")) {
                 String ruta = json.optString("ruta", null);
+
+                // si es foto de perfil, se guarda en sesión
                 if("perfil".equals(tipo) && ruta != null) {
                     new GestorSesionUsuario(getApplicationContext()).guardarFoto(ruta);
                 }
+
+                // devuelve la ruta en servidor
                 return Result.success(
                         new Data.Builder()
                                 .putString("ruta", ruta)
                                 .build()
                 );
             }
-
             return Result.failure();
 
         } catch (Exception e) {

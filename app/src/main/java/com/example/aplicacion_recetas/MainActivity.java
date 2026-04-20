@@ -70,13 +70,16 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         GestorIdioma.aplicarIdioma(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // recuperar receta al rotar desde DetalleActivity
         if (getIntent() != null && getIntent().hasExtra("recetaActual")) {
             recetaActual = (Receta) getIntent().getSerializableExtra("recetaActual");
         }
 
+        // recuperar receta si ha habido rotación (actividad recreada) de detalle
         if (savedInstanceState != null && recetaActual == null) {
             recetaActual = (Receta) savedInstanceState.getSerializable("recetaActual");
         }
@@ -108,19 +111,23 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         dl.addDrawerListener(toggle);
         toggle.syncState();
 
+        // obtener vistas del header del menú lateral
         View headerView = nv.getHeaderView(0);
         TextView txtNombre = headerView.findViewById(R.id.txtNombreUsuario);
         TextView txtEmail = headerView.findViewById(R.id.txtEmailUsuario);
         imgPerfil = headerView.findViewById(R.id.imgPerfil);
 
+        // cargar datos del usuario desde sesión
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
         txtNombre.setText(sesion.getUserName());
         txtEmail.setText(sesion.getUserEmail());
-
+        // cargar recetas desde servidor
         cargarRecetasServidor();
 
+        // asegurar que los fragments están inicializados
         getSupportFragmentManager().executePendingTransactions();
 
+        // si hay una receta seleccionada, mostrarla en el fragment de detalle (horizontal)
         if (recetaActual != null) {
             DetalleRecetaFragment fragment =
                     (DetalleRecetaFragment) getSupportFragmentManager()
@@ -131,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             }
         }
 
+        // cargar foto de perfil desde servidor
         String rutaFoto = sesion.getFoto();
         if (rutaFoto != null) {
             String urlCompleta = "http://34.175.70.22:81/" + rutaFoto;
@@ -151,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             }).start();
         }
 
+        // launcher para sacar foto de perfil
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -162,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 }
         );
 
+        // click en la foto de perfil para abrir la cámara
         imgPerfil.setOnClickListener(v -> abrirCamara());
 
         // Listener del menú lateral NavigationView
@@ -261,23 +271,12 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         });
     }
 
-    private void mostrarRecetaEnDetalle(Receta receta) {
-        if (receta == null) return;
-        DetalleRecetaFragment fragment =
-                (DetalleRecetaFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_detalle_receta);
-
-        if (fragment != null) {
-            fragment.setReceta(receta);
-        }
-    }
-
     // Maneja la selección de receta desde la lista
     @Override
     public void onRecetaSeleccionada(Receta receta) {
-        recetaActual = receta;
+        recetaActual = receta; // guardar receta actual para mantener el estado (rotación)
         int orientation = getResources().getConfiguration().orientation;
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // horizontal
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE) { // comprobar orientación
             // mostrar receta en fragment de detalle
             DetalleRecetaFragment detalle = (DetalleRecetaFragment)
                     getSupportFragmentManager().findFragmentById(R.id.fragment_detalle_receta);
@@ -292,19 +291,24 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         }
     }
 
+    // guardar el estado de la receta actual en rotación especialmente
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable("recetaActual", recetaActual);
     }
 
+    // se recargan las recetas para mantener datos actualizados, se ejecuta al volver a la actividad
     @Override
     protected void onResume() {
         super.onResume();
         cargarRecetasServidor();
     }
+
+    // subir foto de perfil del usuario al servidor
     private void subirFotoPerfil(Bitmap bitmap) {
         try {
+            // guardar temporalmente la foto en caché
             File file = new File(getCacheDir(), "foto.jpg");
 
             FileOutputStream fos = new FileOutputStream(file);
@@ -312,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             fos.close();
 
             GestorSesionUsuario sesion = new GestorSesionUsuario(this);
-
+            // preparar la petición para el worker que sube la foto
             Data input = new Data.Builder()
                     .putString("tipo", "perfil")
                     .putString("email", sesion.getUserEmail())
@@ -323,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                     new OneTimeWorkRequest.Builder(SubirImagenWorker.class)
                             .setInputData(input)
                             .build();
-
+            // lanzar proceso en segundo plano
             WorkManager.getInstance(this).enqueue(request);
 
         } catch (Exception e) {
@@ -331,22 +335,24 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         }
     }
 
+    // abrir cámara del dispositivo para hacer una foto
     private void abrirCamara() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePictureLauncher.launch(intent);
     }
 
-    // Inflar menú para selección de idioma
+    // Inflar menú de idiomas
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_idioma, menu);
         return true;
     }
 
-    // Cambiar idioma según selección del menú
+    // gestionar la selcción de idioma desde el menú
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        // cambia el idioma y recrea la activity para aplicar el cambio
         if(id == R.id.menu_es) {
             GestorIdioma.setIdioma(this, "es");
             recreate();
@@ -359,16 +365,17 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         return super.onOptionsItemSelected(item);
     }
 
+    // obtener las recetas del servidor mediante conexióm HTTP
     private void cargarRecetasServidor() {
         new Thread(() -> {
             try {
                 GestorSesionUsuario sesion = new GestorSesionUsuario(this);
-
+                // config de la conexión
                 URL url = new URL("http://34.175.70.22:81/recetas.php");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
-
+                // parámetros de la petición
                 String params = new Uri.Builder()
                         .appendQueryParameter("accion", "obtener")
                         .appendQueryParameter("idUsuario", String.valueOf(sesion.getUserId()))
@@ -377,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 OutputStream os = conn.getOutputStream();
                 os.write(params.getBytes());
                 os.close();
-
+                // lectura de la respuesta del servidor
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(conn.getInputStream())
                 );
@@ -393,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 if(json.getBoolean("success")) {
                     List<Receta> listaRecetas = new ArrayList<>();
                     JSONArray recetas = json.getJSONArray("recetas");
-
+                    // parseo del JSON a objetos Receta
                     for (int i = 0; i < recetas.length(); i++) {
                         JSONObject obj = recetas.getJSONObject(i);
 
@@ -410,6 +417,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         listaRecetas.add(r);
                     }
 
+                    // actualizar UI en el hilo principal
                     runOnUiThread(() -> {
                         ListaRecetasFragment lista = (ListaRecetasFragment)
                                 getSupportFragmentManager().findFragmentById(R.id.fragment_lista_recetas);
@@ -425,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
         }).start();
     }
 
-    // Solicitar eliminar receta desde lista
+    // Solicitar confirmación para eliminar receta desde lista
     @Override
     public void onRecetaEliminar(Receta receta) {
         recetaEliminar = receta;
@@ -437,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 .show();
     }
 
-    // Confirmar eliminación de la receta
+    // ejecuta la eliminación de la receta tras confirmar el usuario
     private void eliminarRecetaConfirmada() {
         if(recetaEliminar == null) return;
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
@@ -453,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                         .build();
 
         WorkManager.getInstance(this).enqueue(request);
-
+        // observa el resultado y actualiza UI
         WorkManager.getInstance(this)
                 .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
@@ -469,17 +477,19 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 });
     }
 
+    // callback del diálogo de salir de la app
     @Override
     public void onConfirmar() {
         finish();
     }
 
+    // callback cancelar salir
     @Override
     public void onCancelar() {
         // nada
     }
 
-    // Lanzar notificación de receta agregada
+    // gestionar el envío de notificación al añadir una receta (permisos)
     private void lanzarNotificacion(Receta receta) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -494,6 +504,8 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             enviarNotificacion(receta);
         }
     }
+
+    // construye y envía la notificación de nueva receta
     private void enviarNotificacion(Receta receta) {
         String canalId = "canal_recetas";
         NotificationManager manager =
@@ -509,7 +521,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
             canal.setDescription("Notificaciones de recetas");
             manager.createNotificationChannel(canal);
         }
-
+        // intent para abrir el detalle al pulsar la notificacióm
         Intent intent = new Intent(this, DetalleRecetaActivity.class);
         intent.putExtra("receta", receta);
 
@@ -566,7 +578,7 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 .build();
 
         WorkManager.getInstance(this).enqueue(request);
-
+        // después de eliminar se actualiza la lista y se notifica al usuario
         WorkManager.getInstance(this)
                 .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
@@ -581,12 +593,13 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
                 });
     }
 
+    // callback cuando cambia el estado de favorito de una receta
     @Override
     public void onFavoritoCambiado(Receta recetaActual) {
-        cargarRecetasServidor();
+        cargarRecetasServidor(); // recargar recetas para reflejar cambio
     }
 
-    // Notificación de receta eliminada
+    // lanza una notificación cuando se elimina una receta
     private void lanzarNotificacionEliminada(String titulo) {
         String canalId = "canal_recetas";
         NotificationManager manager =

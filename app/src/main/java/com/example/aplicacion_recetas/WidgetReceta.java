@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import java.util.Random;
 
 public class WidgetReceta extends AppWidgetProvider{
+    // se ejecuta cuando el widget necesita actualizarse
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for(int appWidgetId : appWidgetIds) {
@@ -27,12 +28,15 @@ public class WidgetReceta extends AppWidgetProvider{
         }
     }
 
+    // construye y actualiza el widget
     static void actualizarWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+        // layout del widget
         RemoteViews views = new RemoteViews(
                 context.getPackageName(),
                 R.layout.widget_receta
         );
 
+        // obtener la última respuesta guardada por el worker
         SharedPreferences prefs =
                 context.getSharedPreferences("widget_data", Context.MODE_PRIVATE);
 
@@ -41,7 +45,7 @@ public class WidgetReceta extends AppWidgetProvider{
         int recetaId = -1;
 
         try {
-
+            // si hay datos almacenados
             if (json != null && !json.isEmpty()) {
 
                 JSONObject obj = new JSONObject(json);
@@ -50,12 +54,15 @@ public class WidgetReceta extends AppWidgetProvider{
 
                     JSONArray recetas = obj.optJSONArray("recetas");
 
+                    // si hay recetas disponibles
                     if (recetas != null && recetas.length() > 0) {
+                        // elegir una receta random para mostrar en el widget
                         JSONObject receta =
                                 recetas.getJSONObject(new Random().nextInt(recetas.length()));
 
                         recetaId = receta.optInt("id", -1);
 
+                        // rellenar los datos del widget
                         views.setTextViewText(R.id.txtTituloWidget,
                                 receta.optString("titulo", "Sin título"));
 
@@ -79,6 +86,7 @@ public class WidgetReceta extends AppWidgetProvider{
             e.printStackTrace();
             mostrarVacio(views);
         }
+
         // Botón "Otra receta"
         Intent intent = new Intent(context, WidgetReceta.class);
         intent.setAction("FORCE_UPDATE");
@@ -106,16 +114,18 @@ public class WidgetReceta extends AppWidgetProvider{
 
             views.setOnClickPendingIntent(R.id.widget_root, openPendingIntent);
         }
-
+        // actualizar widget en pantalla
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
+    // muestra estado vacío cuando no hay recetas
     private static void mostrarVacio(RemoteViews views) {
         views.setTextViewText(R.id.txtTituloWidget, "Sugerencia para hoy");
         views.setTextViewText(R.id.txtReceta, "");
         views.setTextViewText(R.id.txtTiempo, "--");
     }
 
+    // se ejecuta cuando llega un broadcast (update o refresh manual)
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
@@ -127,15 +137,17 @@ public class WidgetReceta extends AppWidgetProvider{
             ComponentName widget = new ComponentName(context, WidgetReceta.class);
 
             int[] ids = manager.getAppWidgetIds(widget);
-
+            // actualiza widgets activos
             for (int id : ids) {
                 actualizarWidget(context, manager, id);
             }
         }
     }
 
+    // se ejecuta cuando se añade el primer widget a la pantalla
     @Override
     public void onEnabled(Context context) {
+        // programa actualización periódica cada 30 min
         AlarmManager alarmManager =
                 (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -148,7 +160,7 @@ public class WidgetReceta extends AppWidgetProvider{
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        long interval = 30 * 60 * 1000; // 30 mins
+        long interval = 30 * 60 * 1000; // 30 minutos
         alarmManager.setRepeating(
                 AlarmManager.RTC,
                 System.currentTimeMillis() + interval,
@@ -157,8 +169,10 @@ public class WidgetReceta extends AppWidgetProvider{
         );
     }
 
+    // se ejecuta cuando se elimina el último widget
     @Override
     public void onDisabled(Context context) {
+        // cancela la actualización automática
         AlarmManager alarmManager =
                 (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 

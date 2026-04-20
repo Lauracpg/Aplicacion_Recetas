@@ -31,7 +31,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
     @NonNull
     @Override
     public RecetaVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // se infla el layout que representa cada elemento de la lista
+        // infla el layout que representa cada elemento de la lista
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_receta, parent, false);
 
@@ -48,7 +48,8 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
         Context context = holder.itemView.getContext();
         holder.categoria.setText(context.getString(R.string.categoria) + ": " + r.categoria);
         holder.tiempo.setText(context.getString(R.string.tiempo) + ": " + r.tiempo + " " + context.getString(R.string.minutos));
-        // se establece la imagen de fav dependiendo de si está marcada o no
+
+        // icono fav dependiendo de si está marcada o no
         holder.imgFav.setImageResource(
                 r.favorita ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
         );
@@ -63,6 +64,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
                             : android.R.drawable.btn_star_big_off
             );
 
+            // sincroniza el cambio con backend mediante WorkManager
             GestorSesionUsuario sesion = new GestorSesionUsuario(context);
             Data input = new Data.Builder()
                     .putString("accion", "favorito")
@@ -95,7 +97,7 @@ public class RecetaAdapter extends RecyclerView.Adapter<RecetaVH> {
         return listaRecetas.size();
     }
 
-    // Permite actualizar la lista de recetas del adapter
+    // actualizar la lista de recetas del adapter
     public void setRecetas(List<Receta> lista) {
         this.listaRecetas = lista;
         // notifica al RecyclerView que los datos han cambiado

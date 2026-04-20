@@ -10,12 +10,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,22 +31,25 @@ public class RecetasWorker extends Worker {
     @Override
     public Result doWork() {
         try {
+            // acción solicitada
             String accion = getInputData().getString("accion");
-            Log.d("WORKER_DEBUG", "ACCION RECIBIDA = " + accion);
 
             URL url = new URL("http://34.175.70.22:81/recetas.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
+            // formato de envío por POST
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             Uri.Builder builder = new Uri.Builder()
                     .appendQueryParameter("accion", accion);
 
+            // sesión del usuario
             GestorSesionUsuario sesion =
                     new GestorSesionUsuario(getApplicationContext());
             int idUsuario = sesion.getUserId();
 
+            // construcción de parámetros según la acción
             if ("insertar".equals(accion)) {
                 builder.appendQueryParameter("titulo", getInputData().getString("titulo"))
                         .appendQueryParameter("categoria", getInputData().getString("categoria"))
@@ -78,6 +77,7 @@ public class RecetasWorker extends Worker {
                                 String.valueOf(getInputData().getInt("favorita", 0)));
             }
 
+            // convierte los parámetros a formato URL encoded
             String params = builder.build().getEncodedQuery();
 
             OutputStream os = conn.getOutputStream();
@@ -89,6 +89,7 @@ public class RecetasWorker extends Worker {
             writer.close();
             os.close();
 
+            // leer la respuesta del servidor
             int status = conn.getResponseCode();
             InputStream is = (status >= 200 && status < 300)
                     ? conn.getInputStream()
@@ -104,8 +105,8 @@ public class RecetasWorker extends Worker {
             reader.close();
 
             String json = response.toString();
-            Log.d("RECETAS_API", json);
 
+            // si acción es obtener, actualiza datos del widget
             if ("obtener".equals(accion)) {
                 SharedPreferences prefs =
                         getApplicationContext().getSharedPreferences("widget_data", Context.MODE_PRIVATE);
@@ -117,6 +118,7 @@ public class RecetasWorker extends Worker {
                 actualizarWidget(getApplicationContext());
             }
 
+            // resultado exitoso del worker
             return Result.success(
                     new Data.Builder()
                             .putString("response", json)
@@ -126,6 +128,7 @@ public class RecetasWorker extends Worker {
 
         } catch (Exception e) {
             e.printStackTrace();
+            // resultado fallido con mensaje de error
             return Result.failure(
                     new Data.Builder()
                             .putString("error", e.getMessage())
@@ -134,6 +137,7 @@ public class RecetasWorker extends Worker {
         }
     }
 
+    // forzar la actualización del widget
     private void actualizarWidget(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName widget = new ComponentName(context, WidgetReceta.class);

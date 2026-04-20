@@ -14,11 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ModoCocinaService extends Service {
+    // acción para comunicar el cambio de paso a la activity
     public static final String ACTION_PASO = "modo_cocina_paso";
     public static final String EXTRA_INDEX = "index";
 
+    // Binder para comunicación entre activity y service
     private final IBinder binder = new LocalBinder();
-
     private Receta receta;
     private int index = 0;
     private List<String> pasos;
@@ -28,7 +29,7 @@ public class ModoCocinaService extends Service {
         return index;
     }
 
-
+    // permite a la activity acceder al servicio directamente
     public class LocalBinder extends Binder {
         ModoCocinaService getService() {
             return ModoCocinaService.this;
@@ -39,22 +40,25 @@ public class ModoCocinaService extends Service {
     public void onCreate() {
         GestorIdioma.aplicarIdioma(this);
         super.onCreate();
+        // el servicio arranca como foreground, se crea la notificación base
         crearNotificacionForeground();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // recibe la receta al iniciar el servicio
         if (intent != null) {
             receta = (Receta) intent.getSerializableExtra("receta");
             if (receta != null) {
                 pasos = parsePasos(receta.pasos);
             }
         }
-
+        // mantiene el servicio en segundo plano
         crearNotificacionForeground();
         return START_STICKY;
     }
 
+    // notifiación persistente del modo cocina
     private void crearNotificacionForeground() {
         String textoInicial = (pasos != null && !pasos.isEmpty())
                 ? pasos.get(0)
@@ -81,6 +85,7 @@ public class ModoCocinaService extends Service {
         startForeground(1, notification);
     }
 
+    // actualiza la notificación con el paso actual
     private void actualizarNotificacion() {
         Notification notification = new NotificationCompat.Builder(this, "cocina")
                 .setContentTitle(getString(R.string.modo_cocina))
@@ -92,6 +97,7 @@ public class ModoCocinaService extends Service {
         notificationManager.notify(1, notification);
     }
 
+    // avanza al siguiente paso de la receta
     public void siguientePaso() {
         if (receta == null) return;
         if (index < pasos.size() - 1) {
@@ -101,6 +107,7 @@ public class ModoCocinaService extends Service {
         }
     }
 
+    // vuelve al paso anterior
     public void anteriorPaso() {
         if (index > 0) {
             index--;
@@ -109,6 +116,7 @@ public class ModoCocinaService extends Service {
         }
     }
 
+    // notifica a la activity que el paso ha cambiado
     private void enviarBroadcast() {
         Intent broadcast = new Intent(ACTION_PASO);
         broadcast.setPackage(getPackageName());
@@ -116,15 +124,18 @@ public class ModoCocinaService extends Service {
         sendBroadcast(broadcast);
     }
 
+    // detiene el servicio foreground completamente
     public void detenerServicio() {
         stopForeground(STOP_FOREGROUND_REMOVE);
         stopSelf();
     }
 
+    // convierte el string de pasos en lista usable
     private List<String> parsePasos(String pasosRaw) {
         List<String> lista = new ArrayList<>();
         if(pasosRaw == null) return lista;
 
+        // separa pasos numerados
         String[] partes = pasosRaw.split("\\d+\\.");
 
         for (String p : partes) {

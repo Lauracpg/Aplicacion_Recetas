@@ -40,11 +40,12 @@ public class AgregarRecetaActivity extends AppCompatActivity {
     Spinner spinnerCategoria;
     ImageView imageViewFoto;
     Button btnAgregarFoto, btnGuardar;
-    // código de solicitud para seleccionar imágenes desde galería
-    private static final int REQUEST_GALERIA = 100;
+    private static final int REQUEST_GALERIA = 100; // código de solicitud para galería
     // URI imagen seleccionada
-    private Uri fotoTemporalUri = null;
-    private String imagenId;
+    private Uri fotoTemporalUri = null; // URI temporal de la foto seleccionada/capturada
+    private String imagenId; // id de la foto en servidor
+
+    // launchers para cámara y permisos
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
@@ -55,6 +56,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agregar_receta);
 
+        // config toolbar con botón de volver
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -104,7 +106,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 }
             }
         });
-
+        // inicializa pasos con numeración
         editTextPasos.setText("1. ");
         // TextWatcher: genera la numeración de los pasos
         editTextPasos.addTextChangedListener(new TextWatcher() {
@@ -131,6 +133,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             }
         });
 
+        // launcher para cámara, resultado con bitmap
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -145,10 +148,12 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                     Bitmap bitmap = (Bitmap) extras.get("data");
                     if (bitmap == null) return;
 
+                    // mostrar imagen
                     imageViewFoto.setImageBitmap(bitmap);
                     imageViewFoto.setVisibility(View.VISIBLE);
 
                     try {
+                        // guardar imagen en cache
                         File file = new File(getCacheDir(),
                                 "receta_" + System.currentTimeMillis() + ".jpg");
 
@@ -163,7 +168,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                     }
                 }
         );
-
+        // solicitud de permiso de cámara
         requestCameraPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -178,10 +183,11 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         // abre la galería del dispositivo para elegir una imagen
         btnAgregarFoto.setOnClickListener( v-> mostrarOpcionesFoto());
 
-        // validar los datos y devolveros a la actividad que le llama
+        // botón para guardar receta
         btnGuardar.setOnClickListener(v -> guardarReceta());
     }
 
+    // guardar la uri de la foto en cambios de config
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -191,6 +197,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         }
     }
 
+    // mostrar diálogo para elegir entre galería o cámara
     private void mostrarOpcionesFoto() {
         String[] opciones = {
                 getString(R.string.galeria),
@@ -203,6 +210,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                     if(which == 0) {
                         abrirGaleria();
                     } else {
+                        // comprueba permisos de cámara
                         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                                 == PackageManager.PERMISSION_GRANTED) {
                             abrirCamara();
@@ -213,6 +221,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 }).show();
     }
 
+    // lanzar intent de cámara
     private void abrirCamara() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraLauncher.launch(intent);
@@ -224,8 +233,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         return true;
     }
 
-    // Recoge los datos introducidos, valida campos, formatea información
-    // y devuelve la receta a la actividad principal
+    // Recoge, valida y devuelve los datos de la receta
     private void guardarReceta() {
         String titulo = editTextTitulo.getText().toString().trim();
         String tiempoString = editTextTiempo.getText().toString().trim();
@@ -234,7 +242,8 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         imagenId = "receta_" + System.currentTimeMillis();
 
         boolean valido = true;
-        // campos obligatorios
+
+        // validación de campos obligatorios
         if(titulo.isEmpty()){
             editTextTitulo.setError(getString(R.string.error_titulo));
             valido = false;
@@ -258,6 +267,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         if(!valido){
             return;
         }
+
         // pone en mayúscula la primera letra del título
         if(titulo.length() > 0) {
             titulo = titulo.substring(0,1).toUpperCase() + titulo.substring(1);
@@ -295,6 +305,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         data.putExtra("ingredientes", ingredientes);
         data.putExtra("pasos", pasos);
 
+        // si hay foto subirla, si no devolverla directamente
         if (fotoTemporalUri != null) {
             subirImagen(data);
         } else {
@@ -305,6 +316,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         }
     }
 
+    // lanzar worker para actualizar datos del widget
     private void actualizarWidgetDatos() {
         Data input = new Data.Builder()
                 .putString("accion", "obtener")
@@ -317,10 +329,13 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         WorkManager.getInstance(this).enqueue(request);
     }
 
+    // subir imagen al servidor con WorkManager
     private void subirImagen(Intent data) {
         GestorSesionUsuario sesion = new GestorSesionUsuario(this);
 
         File file = new File(getCacheDir(), "upload.jpg");
+
+        // copia la foto seleccionada a un archivo temporal
         try (InputStream is = getContentResolver().openInputStream(fotoTemporalUri);
              FileOutputStream fos = new FileOutputStream(file)) {
 
@@ -334,6 +349,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        // datos para el worker
         Data input = new Data.Builder()
                 .putString("tipo", "receta")
                 .putString("ruta_local", file.getAbsolutePath())
@@ -347,7 +363,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                         .build();
 
         WorkManager.getInstance(this).enqueue(request);
-
+        // observar resultado de subida
         WorkManager.getInstance(this)
                 .getWorkInfoByIdLiveData(request.getId())
                 .observe(this, workInfo -> {
@@ -370,7 +386,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
                 });
     }
 
-    // Abre el selector de documentos del sistema para elegir una imagen
+    // Abre el selector de imaégenes del sistema
     private void abrirGaleria() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("image/*");
@@ -378,7 +394,7 @@ public class AgregarRecetaActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_GALERIA);
     }
 
-    // Recibe el resultado del selector de imágenes
+    // Recibe imagen seleccionada desde galeria
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

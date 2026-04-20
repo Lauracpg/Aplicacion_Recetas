@@ -44,14 +44,15 @@ public class DetalleRecetaFragment extends Fragment {
     private Receta recetaActual;
     private static final int REQUEST_GALERIA = 200;
     private Listener listener;
-
     private Uri imagenSeleccionada = null;
     private boolean imgChanged = false;
     private Uri fotoCamaraUri;
+
+    // launchers para cámara y permisos
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
-    public interface Listener { // interfaz para fragment -> activity
+    public interface Listener { // interfaz para comunicación fragment -> activity
         void onEliminarDesdeDetalle(Receta receta);
 
         void onFavoritoCambiado(Receta recetaActual);
@@ -68,6 +69,7 @@ public class DetalleRecetaFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // si ya había una receta cargada, se muestra tras recrear eñ fragment
         if (recetaActual != null) {
             mostrarReceta(recetaActual);
         }
@@ -88,6 +90,7 @@ public class DetalleRecetaFragment extends Fragment {
         imageViewFoto = view.findViewById(R.id.imageViewFoto);
         imageFavDetalle = view.findViewById(R.id.imageFavoritoDetalle);
 
+        // restaurar el estado después de rotación
         if (savedInstanceState != null) {
             recetaActual = (Receta) savedInstanceState.getSerializable("receta");
         }
@@ -96,6 +99,7 @@ public class DetalleRecetaFragment extends Fragment {
             mostrarReceta(recetaActual);
         }
 
+        // botón eliminar receta
         Button btnEliminar = view.findViewById(R.id.btnEliminarDetalle);
         btnEliminar.setOnClickListener(v -> {
             // diálogo de confirmación antes de eliminar
@@ -111,20 +115,18 @@ public class DetalleRecetaFragment extends Fragment {
                     .show();
         });
 
-        // añadir o cambiar foto
+        // botón para añadir o cambiar foto
         btnAgregarFoto = view.findViewById(R.id.btnAgregarFoto);
         btnAgregarFoto.setOnClickListener(v -> mostrarOpcionesFoto());
-
+        // guardar cambios de foto
         Button btnGuardar = view.findViewById(R.id.btnGuardarCambios);
         btnGuardar.setOnClickListener(v -> guardarCambios());
 
-        Fragment listaFragment = requireActivity()
-                        .getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_lista_recetas);
-
+        // favorito
         imageFavDetalle.setOnClickListener(v -> {
             if(recetaActual != null) {
                 if (recetaActual == null) return;
+                // alterna estado favorito
                 boolean nuevoEstado = !recetaActual.favorita;
 
                 GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
@@ -140,6 +142,7 @@ public class DetalleRecetaFragment extends Fragment {
                                 .setInputData(input)
                                 .build();
 
+                // observa el resultado y actualiza UI
                 WorkManager.getInstance(requireContext()).enqueue(request);
                 WorkManager.getInstance(requireContext())
                         .getWorkInfoByIdLiveData(request.getId())
@@ -152,6 +155,8 @@ public class DetalleRecetaFragment extends Fragment {
                                                 ? android.R.drawable.btn_star_big_on
                                                 : android.R.drawable.btn_star_big_off
                                 );
+
+                                // notifica a la activity para refrescar lista
                                 if (listener != null) {
                                     listener.onFavoritoCambiado(recetaActual);
                                 }
@@ -160,8 +165,8 @@ public class DetalleRecetaFragment extends Fragment {
             }
         });
 
+        // modo cocina
         Button btnModoCocina = view.findViewById(R.id.btnModoCocina);
-
         btnModoCocina.setOnClickListener(v -> {
             if (recetaActual == null) return;
 
@@ -170,6 +175,7 @@ public class DetalleRecetaFragment extends Fragment {
             startActivity(intent);
         });
 
+        // cámara
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -184,10 +190,12 @@ public class DetalleRecetaFragment extends Fragment {
                     Bitmap bitmap = (Bitmap) extras.get("data");
                     if (bitmap == null) return;
 
+                    // muestra la foto hecha
                     imageViewFoto.setImageBitmap(bitmap);
                     imageViewFoto.setVisibility(View.VISIBLE);
 
                     try {
+                        // guarda temporalmente la foto en cache
                         File file = new File(
                                 requireContext().getCacheDir(),
                                 "receta_" + System.currentTimeMillis() + ".jpg"
@@ -207,7 +215,7 @@ public class DetalleRecetaFragment extends Fragment {
                     }
                 }
         );
-
+        // permiso de cámara
         requestCameraPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -224,6 +232,7 @@ public class DetalleRecetaFragment extends Fragment {
         return view;
     }
 
+    // opciones de foto
     private void mostrarOpcionesFoto() {
         String[] opciones = {
                 getString(R.string.galeria),
@@ -251,11 +260,13 @@ public class DetalleRecetaFragment extends Fragment {
         cameraLauncher.launch(intent);
     }
 
+    // guardar cambios de la imagen
     private void guardarCambios() {
         if (recetaActual == null) return;
 
         GestorSesionUsuario sesion = new GestorSesionUsuario(requireContext());
 
+        // si hay foto nueva se sube al servidor
         if(imagenSeleccionada != null && imgChanged) {
             try {
                 InputStream is = requireContext().getContentResolver().openInputStream(imagenSeleccionada);
@@ -282,6 +293,7 @@ public class DetalleRecetaFragment extends Fragment {
 
                 WorkManager.getInstance(requireContext()).enqueue(request);
 
+                // observa la subida y actualiza la imagen final
                 WorkManager.getInstance(requireContext())
                         .getWorkInfoByIdLiveData(request.getId())
                         .observe(getViewLifecycleOwner(), workInfo -> {
@@ -317,6 +329,7 @@ public class DetalleRecetaFragment extends Fragment {
         }
     }
 
+    // cargar imagen desde servidor
     private void cargarImagenServidor(String ruta) {
         String urlCompleta = "http://34.175.70.22:81/" + ruta;
         new Thread(() -> {
@@ -351,13 +364,14 @@ public class DetalleRecetaFragment extends Fragment {
 
         if(requestCode == REQUEST_GALERIA && resultCode == Activity.RESULT_OK && data != null) {
             Uri imgSelected = data.getData();
+
             if(imgSelected != null && recetaActual != null) {
                 // permiso para poder acceder a la imagen después
                 requireContext().getContentResolver()
                         .takePersistableUriPermission(imgSelected,
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION
                 );
-                // mostrar imagen
+
                 imageViewFoto.setImageURI(imgSelected);
                 imageViewFoto.setVisibility(View.VISIBLE);
 
@@ -387,7 +401,7 @@ public class DetalleRecetaFragment extends Fragment {
         textViewIngredientes.setText(receta.ingredientes);
         textViewPasos.setText(receta.pasos);
 
-        // icono favorito
+        // estado favorito
         if (imageFavDetalle != null) {
             imageFavDetalle.setImageResource(
                     receta.favorita
@@ -396,7 +410,7 @@ public class DetalleRecetaFragment extends Fragment {
             );
         }
 
-        // mostrar foto si tiene
+        // mostrar foto receta si tiene
         if (receta.fotoUri != null && !receta.fotoUri.isEmpty()) {
             imageViewFoto.setVisibility(View.VISIBLE);
             cargarImagenServidor(receta.fotoUri);
@@ -410,6 +424,7 @@ public class DetalleRecetaFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        // guarda estado del fragment (receta actual)
         outState.putSerializable("receta", recetaActual);
     }
 }

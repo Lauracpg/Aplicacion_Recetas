@@ -11,12 +11,14 @@ public class GestorSesionUsuario {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_FOTO = "foto";
 
-    private final SharedPreferences prefs;
+    private final SharedPreferences prefs; // donde se guarda la sesión localmente
 
+    // inicializar el acceso a SharedPreferences
     public GestorSesionUsuario(Context context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+    // guarda los datos del usuario tras iniciar sesión/registrarse
     public void guardarUsuario(int id, String nombre, String email) {
         prefs.edit()
                 .putInt(KEY_ID, id)
@@ -33,10 +35,12 @@ public class GestorSesionUsuario {
         return prefs.getString(KEY_NOMBRE, null);
     }
 
+    // comprueba si hay una sesión activa
     public boolean estaLogueado() {
         return getUserId() != -1;
     }
 
+    // cierra la sesión del usuario eliminado los datos guardados
     public void cerrarSesion() {
         prefs.edit().clear().apply();
     }
@@ -45,6 +49,7 @@ public class GestorSesionUsuario {
         return prefs.getString(KEY_EMAIL, null);
     }
 
+    // guarda la ruta de la foto de perfil del usuario
     public void guardarFoto(String ruta) {
         prefs.edit().putString(KEY_FOTO, ruta).apply();
     }
