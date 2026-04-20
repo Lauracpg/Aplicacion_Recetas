@@ -399,8 +399,15 @@ public class MainActivity extends AppCompatActivity implements DialogConfirmacio
 
     // abrir cámara del dispositivo para hacer una foto
     private void abrirCamara() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureLauncher.launch(intent);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                takePictureLauncher.launch(intent);
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    200);
+        }
     }
 
     // subir foto de perfil del usuario al servidor
